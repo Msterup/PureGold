@@ -25,11 +25,12 @@ class Agent:
         self.save_every = 10
         self.prediction_rate = 0
 
+
         if checkpoint:
             self.load(checkpoint)
 
     @lru_cache(maxsize=1000)
-    def act(self, board):
+    def act(self, board, grad=True):
         """Given a state, choose an epsilon-greedy action"""
         perm_act = True
 

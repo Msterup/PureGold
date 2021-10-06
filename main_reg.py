@@ -1,8 +1,8 @@
 from monte_carlo_tree_search import MCTS
 from game import YukonBoard
 from reg_agent import Agent
-from hur_cy import nikolai
-from myplayer import Player
+#from hur_cy import nikolai
+
 
 from collections import deque
 import random as rn
@@ -21,6 +21,11 @@ import datetime
 from time import sleep
 
 
+is_CUDA_available = torch.cuda.is_available()
+print(f"Checking CUDA avaliability.. {is_CUDA_available}")
+
+
+
 
 piles = 4
 
@@ -33,7 +38,7 @@ if piles == 5:
 if piles == 6:
     dbindex = 0
 
-player = Player(piles)
+
 
 
 from torch.utils.tensorboard import SummaryWriter
@@ -61,6 +66,8 @@ def new_YukonBoard():
 external_board = False
 
 if external_board == True:
+    from myplayer import Player
+    player = Player(piles)
     print("Playing with external board..")
     if player.is_cards_configured == False or player.is_settings_configured == False:
         player.setup()

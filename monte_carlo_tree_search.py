@@ -9,7 +9,7 @@ from collections import defaultdict
 import math
 import numpy as np
 import random
-from hur_cy import nikolai
+#from hur_cy import nikolai
 import random as rn
 
 

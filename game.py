@@ -43,7 +43,7 @@ class YukonBoard(_YB, Node):
             winners.append(test_board.is_terminal())
 
         num_terminal = winners.count(False)
-        return all_same, num_terminal
+        return all_same, num_terminal, winners
 
     def find_random_child(board):
         if board.turn:
@@ -74,11 +74,11 @@ class YukonBoard(_YB, Node):
                     if check > max:
                         max = check
                 if max > 21:
-                    return (52 -sum(x for x in board.deck))/10
+                    return 0 # (52 -sum(x for x in board.deck))/10
                 else:
                     return 1000
             else:
-                return (52 -sum(x for x in board.deck))/10
+                return 0 # (52 -sum(x for x in board.deck))/10
 
 
     def is_terminal(board):
@@ -159,11 +159,7 @@ class YukonBoard(_YB, Node):
         return deck, card
 
     def show(board, c, e):
-        now = datetime.datetime.now()
 
-        print(" ")
-        print("----------------------")
-        print("Current time " + now.strftime("%Y-%m-%d %H:%M:%S"))
         print(" ")
         print(board.piles)
         print(" ")

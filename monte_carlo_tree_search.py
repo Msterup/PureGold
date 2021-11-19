@@ -8,21 +8,27 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 import math
 import numpy as np
-import random
-#from hur_cy import nikolai
+from hur_cy import nikolai
 import random as rn
+from functools import lru_cache
 
 
 class MCTS:
     "Monte Carlo tree searcher. First rollout the tree then choose a move."
 
-    def __init__(self, agent, exploration_weight=1000):
+    def __init__(self, agent, exploration_weight=500):
         self.agent = agent
         self.Q = defaultdict(int)  # total reward of each node
         self.N = defaultdict(int)  # total visit count for each node
         self.F = defaultdict(float)  # total visit count for each node
         self.children = dict()  # children of each node
         self.exploration_weight = exploration_weight
+        self.nik_rate = 1
+
+    @lru_cache(1000*3)
+    def huristic(self, board):
+        return nikolai(board)
+
 
     def choose(self, node):
         "Choose the best successor of node. (Choose a move in the game)"
@@ -68,16 +74,22 @@ class MCTS:
                 return path
             unexplored = self.children[node] - self.children.keys()
             if unexplored:
+
+
                 if node.turn:
-                    max = -math.inf
-                    winner = None
-                    for each in unexplored:
-                        score = self.agent.act(each)
-                        if score > max:
-                            max = score
-                            winner = each
-                    n = winner
-                    self.F[n] = max
+                    if rn.random() > self.nik_rate:
+                        nik_play = self.huristic(node)
+                        if nik_play in unexplored:
+                            n = nik_play
+                    else:
+                        max = -math.inf
+                        for each in unexplored:
+                            score = self.agent.act(each)
+                            if score > max:
+                                max = score
+                                winner = each
+                        n = winner
+                        self.F[n] = max
 
                 else:
                     n = node.find_random_child()
@@ -102,14 +114,17 @@ class MCTS:
                 net_total_prediction = False
                 if net_total_prediction:
                     return self.agent.act(node)
-                max = -math.inf
-                winner = None # rn.sample(unexplored,1)
-                for each in node.find_children(node):
-                    score = self.agent.act(each)
-                    if score > max:
-                        max = score
-                        winner = each
-                node = winner
+                if rn.random() > self.agent.nik_rate:
+                    for each in node.find_children(node):
+                        score = self.agent.act(each)
+                        max = -math.inf
+                        if score > max:
+                            max = score
+                            winner = each
+                    node = winner
+                else:
+                    nik_play = self.huristic(node)
+                    node = node.make_move(nik_play)
             else:
                 node = node.find_random_child()
 

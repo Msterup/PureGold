@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 
-from neural import Net
+from neural import Net, ResNet, ResidualBlock
 from game import YukonBoard
 
 from collections import deque
@@ -15,24 +15,36 @@ from functools import lru_cache
 class Agent:
     def __init__(self, save_dir, checkpoint=None):
         self.save_dir = save_dir
-        self.net = Net()
-        self.loss_fn = torch.nn.L1Loss()
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
+        self.net = ResNet(ResidualBlock, 20)
+        self.loss_fn = torch.nn.MSELoss()
+        self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
+        #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
         #self.optimizer = optim.SGD(self.net.parameters(), lr=0.00001, momentum=0.9)
-        self.memory = deque(maxlen=100000)
+
+        self.LSTM_size =    1000
+        self.recall_size =  100
+        self.recall_chance = 1
+        self.recall_min =   self.recall_size*self.recall_chance
+
+        self.memory = deque(maxlen=self.LSTM_size)
 
         self.use_cuda = False
         self.save_every = 10
         self.prediction_rate = 0
 
+        self.num_cached = 0
+
+        self.nik_rate = 1.15
 
         if checkpoint:
             self.load(checkpoint)
 
-    @lru_cache(maxsize=1000)
+
+
+    @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):
         """Given a state, choose an epsilon-greedy action"""
-        perm_act = True
+        perm_act = False
 
         if perm_act:
             # find all permutations of the state
@@ -62,26 +74,33 @@ class Agent:
 
 
     def cache(self, board, score):
-        """Add the experience to memory"""
-        """Experience: Board, score"""
-        permutations = itertools.permutations(board.piles)
-        unique_permutations = []
-        for each in permutations:
-            unique_permutations.append(each)
-        unique_permutations = set(unique_permutations)
+        permute = False
 
-        for each in unique_permutations:
-            self.memory.append((YukonBoard(each, deck=board.deck, card=board.card, turn=True, terminal=False), score))
+        if permute:
+            """Add the experience to memory"""
+            """Experience: Board, score"""
+            permutations = itertools.permutations(board.piles)
+            unique_permutations = []
+            for each in permutations:
+                unique_permutations.append(each)
+            unique_permutations = set(unique_permutations)
 
+            for each in unique_permutations:
+                self.memory.append((YukonBoard(each, deck=board.deck, card=board.card, turn=True, terminal=False), score))
+                self.num_cached += 1
+        else:
+            self.memory.append((board, score))
 
         return
 
     def recall(self):
         """Sample experiences from memory"""
 
-        return rn.sample(self.memory, 3000)
+        return rn.sample(self.memory, 100)
+
 
     def learn(self):
+        self.num_cached = 0
         sum_loss = 0
         experiences = self.recall()
         for input, label in experiences:
@@ -103,6 +122,7 @@ class Agent:
         torch.save(
             dict(
                 model=self.net.state_dict(),
+                nik_rate = self.nik_rate
             ),
             save_path
         )
@@ -119,6 +139,7 @@ class Agent:
 
         print(f"Loading model at {load_path}")
         self.net.load_state_dict(state_dict)
+        self.nik_rate = ckp.get('nik_rate')
 
 
 

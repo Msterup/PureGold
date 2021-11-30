@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 
-from neural import Net, ResNet, ResidualBlock
+from neural import ResNet, ResidualBlock
 from game import YukonBoard
 
 from collections import deque
@@ -12,17 +12,17 @@ from functools import lru_cache
 
 
 
-class Agent:
+class RegAgent:
     def __init__(self, save_dir, checkpoint=None):
         self.save_dir = save_dir
-        self.net = ResNet(ResidualBlock, 20)
+        self.net = ResNet(ResidualBlock, 3)
         self.loss_fn = torch.nn.MSELoss()
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
         #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
         #self.optimizer = optim.SGD(self.net.parameters(), lr=0.00001, momentum=0.9)
 
-        self.LSTM_size =    1000
-        self.recall_size =  100
+        self.LSTM_size =     12000
+        self.recall_size =   100
         self.recall_chance = 1
         self.recall_min =   self.recall_size*self.recall_chance
 
@@ -95,14 +95,14 @@ class Agent:
 
     def recall(self):
         """Sample experiences from memory"""
-
-        return rn.sample(self.memory, 100)
+        num_cached = self.num_cached
+        self.num_cached = 0
+        return rn.sample(self.memory, num_cached), num_cached
 
 
     def learn(self):
-        self.num_cached = 0
         sum_loss = 0
-        experiences = self.recall()
+        experiences, num_experiences = self.recall()
         for input, label in experiences:
             self.optimizer.zero_grad()
             output = self.net.forward(input.tensorize())
@@ -112,7 +112,8 @@ class Agent:
             self.optimizer.step()
             sum_loss += loss.item()
 
-        return sum_loss
+        print(f"Number of cached experiences: {len(self.memory)}")
+        return sum_loss/num_experiences
 
 
 

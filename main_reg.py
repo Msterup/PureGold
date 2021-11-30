@@ -1,7 +1,8 @@
 from monte_carlo_tree_search import MCTS
 from game import YukonBoard
-from reg_agent import Agent
+from reg_agent import RegAgent
 from hur_cy import nikolai
+import sys, time, msvcrt
 
 
 from collections import deque
@@ -40,9 +41,13 @@ if piles == 6:
 
 
 
-
-from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter()
+logging = True
+if logging:
+    from torch.utils.tensorboard import SummaryWriter
+    writer = SummaryWriter()
+    print("Using logging on tensorboard.")
+else:
+    print("Warning! Not using logging!")
 
 
 
@@ -63,6 +68,16 @@ def new_YukonBoard():
 
 # Hyperparamaters
 
+use_precompute = True
+if use_precompute:
+    precompute_cache = dict()
+    precompute_cache_uses = dict()
+    print("Warning! Using precompute")
+else:
+    print("Not using precompute!")
+
+
+
 external_board = False
 
 if external_board == True:
@@ -79,8 +94,8 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-11-19T11-55-30/mario_net_5.chkpt')
-agent = Agent(save_dir, checkpoint=checkpoint)
+checkpoint = Path('checkpoints/2021-11-26T23-40-04/mario_net_58.chkpt')
+reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 
 
@@ -114,20 +129,27 @@ if save_data:
 
 def simulate(sim_board):
     while True:
-        sim_board = sim_board.make_move(nikolai(sim_board))
+        sim_board = sim_board.make_move(tree.huristic(sim_board))
 
         if sim_board.terminal or sum(sim_board.deck) == 0:
             if sum(sim_board.deck) == 0:
                 return True
             else:
                 return False
-        sim_board = sim_board.make_move(0)
+        sim_board = sim_board.make_move(0) #draw card
 
+
+now = datetime.datetime.now()
+
+
+print("")
+print("Please make sure all settings are correct")
+input("Press Enter to continue...")
 
 
 for e in range(5000):
-    now = datetime.datetime.now()
-    tree = MCTS(agent)
+
+
     time_list = 53 * [0]
     its_list = 53 * [0]
 
@@ -158,8 +180,12 @@ for e in range(5000):
 
     c = 0
 
-    agent.num_chached = 0
+    reg_agent.num_chached = 0
+    tree = None
     while True:
+        if tree == None:
+            tree = MCTS(reg_agent)
+        reg_agent.nik_rate = 0
 
         c += 1
         past = now
@@ -170,170 +196,181 @@ for e in range(5000):
         print("----------------------")
         print(f"Current time {now} Delta_t {dt}")
         board.show(c, e)
-        s = 0
-        sim_wins = []
-        all_same, num_non_terminal, non_terminal_move = board.find_quick()
-        score = 1
-        winner = 0
+        if board in precompute_cache:
+            if precompute_cache_uses[board] >= 10:
+                del precompute_cache[board]
+                precompute_cache_uses[board] = 0
+
+        if use_precompute and board in precompute_cache:
+            winner = precompute_cache[board]
+            precompute_cache_uses[board] += 1
 
 
-        if all_same == True:
-
-            print("All options are equal - making random move")
-            winner = rn.randint(0, piles-1)
-            one_option_cards += 1
-
-        elif num_non_terminal == 0 and sum(board.deck) > 0:
-
-            winner = rn.randint(0, piles-1)
-            print("No non terminal moves - making random move")
-            one_option_cards += 1
-
-        elif num_non_terminal == 1:
-
-            winner = non_terminal_move[0]
-            print("Only one option - making it")
-            one_option_cards += 1
-
+            precomputed_cards += 1
+            print(f"This board was already computed - winner is {winner}")
         else:
-            """ Huristic solved disabled to train net :)
-            while s < 100 and hur_solved == False:
-                    s += 1
-                    sim_wins.append(simulate(board))
-                    if all(sim_wins) == True and s == 99:
-                            hur_solved = True
+            s = 0
+            sim_wins = []
+            fq = board.find_quick()
+            if fq is not None:
+                winner = fq
+                print("Find quick option selected")
+                one_option_cards += 1
+                tree = None
+                score = [1001]
 
+            else:
+                # Enable or disable hur_solve
+                #while s < 100 and hur_solved == False:
+                #        s += 1
+                #        sim_wins.append(simulate(board))
+                #        if all(sim_wins) == True and s == 99:
+                #                hur_solved = True
+    
+    
+                if hur_solved == True:
+                    print("Solved by 100 huristic simulations")
+                    winner = tree.huristic(board)
+                    score = [1001]
+                    huristic_cards += 1
 
-            if hur_solved == True:
-                print("Solved by 100 huristic simulations")
-                #winner = board.expert()
-                winner = nikolai(board)
-                score = 1
-                huristic_cards += 1
-            """
+                if not hur_solved:
+                    for each in board.find_children():
+                        if each.is_terminal:
+                            for _ in range(100):
+                                tree.do_rollout(each)
 
-            # prob good: alpha = 0.9999995
-            alpha = 0.999999995
-            test_list = []
-            for _ in range(searches_def):
-                tree.do_rollout(board)
+                    # prob good: alpha = 0.9999995
+                    alpha = 0.999999995
+                    test_list = []
+                    for _ in range(searches_def):
+                        tree.do_rollout(board)
 
-                if _ % 45 == 0:
+                        if _ % 45 == 0:
+                            score, winner = tree.choose(board)
+                            test_list.append(max(score))
+                            n0 = len(test_list)
+                            if len(test_list) > 4:
+                                S = st.stdev(test_list)
+                                T = scipy.stats.t.interval(alpha, len(test_list)-1, loc=0, scale=1)[-1]
+                                h0 = T*(S/math.sqrt(n0-1))
+
+                                sort_score = score[-4:]
+                                sort_score = set(sort_score)
+
+                                last_item = 0
+                                this_item = 0
+                                for each in sort_score:
+                                    last_item = this_item
+                                    this_item = each
+
+                                h = (this_item-last_item)/(4) #More MCTS
+                                if h == 0:
+                                    # Avoid div by zero
+                                    continue
+
+                                if all([x == 0 for x in score]) and _ > 750:
+                                    winner = tree.huristic(board)
+                                    print(f"All scores zero - using huristics and braking training.")
+
+                                N = n0*(h0/h)**2
+
+                                if N < _:
+                                    print(f"Rosetti says: Number of samples is appropriate after {N}. Actual samples run is {_}")
+                                    break
+
+                        if _ == searches_def-1:
+                            print(f"Max searches reached at N = {searches_def}. Rosetti suggests {N}.")
+
                     score, winner = tree.choose(board)
-                    test_list.append(max(score))
-                    n0 = len(test_list)
-                    if len(test_list) > 4:
-                        S = st.stdev(test_list)
-                        T = scipy.stats.t.interval(alpha, len(test_list)-1, loc=0, scale=1)[-1]
-                        h0 = T*(S/math.sqrt(n0-1))
+                    if all([x == 0 for x in score]):
+                        winner = tree.huristic(board)
+                        print(f"All scores zero - using huristics")
 
-                        sort_score = score[-4:]
-                        sort_score = set(sort_score)
+                    predictions = []
+                    for each in range(1,piles+1):
+                        future_board = board.make_move(each-1)
+                        future_score = score[each]
+                        reg_agent.cache(future_board, future_score)
+                        prediction = reg_agent.act(future_board)
+                        predictions.append(prediction)
+                        reg_agent.num_cached += 1
 
-                        last_item = 0
-                        this_item = 0
-                        for each in sort_score:
-                            last_item = this_item
-                            this_item = each
-
-                        h = (this_item-last_item)/(2) #More MCTS
-                        if h == 0:
-                            # Avoid div by zero
-                            continue
-
-                        N = n0*(h0/h)**2
-
-                        if N < _:
-                            print(f"Rosetti says: Number of samples is appropriate after {N}. Actual samples run is {_}")
-                            break
-
-                if _ == searches_def-1:
-                    print(f"Max searches reached at N = {searches_def}. Rosetti suggests {N}.")
+                    pred_card = np.argmax(predictions)
 
 
 
 
-            score, winner = tree.choose(board)
-            if all(score) == 0:
-                winner = tree.huristic(board)
-                print(f"All scores zero - using huristics")
-            else:
-
-                # train only if MCTS is used
-
-
-                predictions = []
-                for each in range(1,piles+1):
-                    future_board = board.make_move(each-1)
-                    future_score = score[each]
-                    agent.cache(future_board, future_score)
-                    prediction = agent.act(future_board)
-                    predictions.append(prediction)
-
-                pred_card = np.argmax(predictions)
+                    prediction = reg_agent.act(future_board)
 
 
 
 
-                prediction = agent.act(future_board)
-
-
-
-
-            print(" ")
-            print(f"Scores vs predictions:         Score of current state:  {score[0]}")
-            print(f"                               Score of prediction was: {agent.act(board)}*")
-            print(" ")
-            score = score[-4:]
-            print(score)
-            print(predictions)
-            print(" ")
-            print(f"Huristic option was   {tree.huristic(board)}")
-            print(f"Neural net option was {pred_card}")
-            print(f"Winning option was    {winner}")
-            print("")
+                    print(" ")
+                    print(f"Scores vs predictions:         Score of current state:  {score[0]}")
+                    print(f"                               Score of prediction was: {reg_agent.act(board)}*")
+                    print(" ")
+                    score = score[-4:]
+                    print(score)
+                    print(predictions)
+                    print(" ")
+                    print(f"Huristic option was   {tree.huristic(board)}")
+                    print(f"Neural net option was {pred_card}")
+                    print(f"Winning option was    {winner}")
+                    print("")
 
 
 
 
 
 
-            if pred_card == winner:
-                prediction_list_moving.append(True)
-                print("Neural net was right! (Right pile.)")
-            elif score[pred_card] == score[winner]:
-                prediction_list_moving.append(True)
-                print("Neural net was right! (Wrong pile, but equal.)")
-            else:
-                prediction_list_moving.append(False)
-                print("Neural net was wrong!")
+                    if pred_card == winner:
+                        prediction_list_moving.append(True)
+                        print("Neural net was right! (Right pile.)")
+                    elif score[pred_card] == score[winner]:
+                        prediction_list_moving.append(True)
+                        print("Neural net was right! (Wrong pile, but equal.)")
+                    else:
+                        prediction_list_moving.append(False)
+                        print("Neural net was wrong!")
 
 
-            hur_hits, hur_miss, _, _ = tree.huristic.cache_info()
-            act_hits, act_miss, _, _ = agent.act.cache_info()
+                hur_hits, hur_miss, _, _ = tree.huristic.cache_info()
+                act_hits, act_miss, _, _ = reg_agent.act.cache_info()
+                #mm_hits , mm_miss , _, _ = board.make_move.cache_info()
 
-            print(f"Memorization information: ")
-            print(f"Items in tree: {len(tree.children)}")
-            print(f"    Huristics: Hits: {hur_hits}, Miss: {hur_miss}, Rate: {hur_hits/(hur_hits+hur_miss)}")
-            print(f"    agent.act: Hits: {act_hits}, Miss: {act_miss}, Rate: {act_hits/(act_hits+act_miss)}")
+                print(f"Memorization information: ")
+                print(f"Items in tree: {len(tree.children)}")
+                print(f"    Huristics: Hits: {hur_hits}, Miss: {hur_miss}, Rate: {hur_hits/(hur_hits+hur_miss)}")
+                print(f"    reg_agent.act: Hits: {act_hits}, Miss: {act_miss}, Rate: {act_hits/(act_hits+act_miss)}")
+                #print(f"    reg_agent.act: Hits: {mm_hits}, Miss: {mm_miss}, Rate: {mm_hits / (mm_hits + mm_miss)}")
 
-            pred_mean = st.mean(prediction_list_moving)
-            agent.prediction_rate = pred_mean
-            writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]),
-                              cards_trained)
-            pred_loss = 0
-            for i in range(4):
-                pred_loss += abs(score[i]-predictions[i])
-            writer.add_scalar("Prediction loss", torch.FloatTensor([pred_loss]),
-                              cards_trained)
+                pred_mean = st.mean(prediction_list_moving)
+                
+                if logging:
+                    writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]),
+                                  cards_trained)
+                pred_loss = 0
+                if not hur_solved:
+                    for i in range(4):
+                        pred_loss += abs(score[i]-predictions[i])
 
-            cards_trained += 1
+                if logging:
+                    writer.add_scalar("Prediction loss", torch.FloatTensor([pred_loss]),
+                                  cards_trained)
+
+                cards_trained += 1
 
 
 
 
         if external_board == True:
             player.get_real_action(winner, board, drawn_card)
+
+        if use_precompute and c < 15:
+            precompute_cache[board] = winner
+            if board not in precompute_cache_uses:
+                precompute_cache_uses[board] = 0
 
 
         board = board.make_move(winner)
@@ -352,8 +389,8 @@ for e in range(5000):
             board.show(c, e)
 
             learn = True
-            if len(agent.memory) >= agent.recall_min and learn:
-                loss_sum = agent.learn()
+            if len(reg_agent.memory) >= reg_agent.recall_min and learn:
+                loss_sum = reg_agent.learn()
             else:
                 loss_sum = 0
             print(f"Game ended at card {c}. Current goal was {current_goal}. Loss was {loss_sum}")
@@ -370,27 +407,33 @@ for e in range(5000):
             if sum(board.deck) == 0:
                 print("win")
                 win_list_moving.append(1)
+                win_list.append(1)
             else:
                 win_list_moving.append(0)
+                win_list.append(0)
             mean_w = st.mean(win_list_moving)
+            mean_w_total = st.mean(win_list)
 
             print(f"Current mean is {mean_c}")
             print(f"Current winr is {mean_w}")
 
-            writer.add_scalar("Card", torch.FloatTensor([c]), e)
-            writer.add_scalar("Mean/30", torch.FloatTensor([mean_c]), e)
-            writer.add_scalar("Win rate, last 200", torch.FloatTensor([mean_w]), e)
+            if logging:
+                writer.add_scalar("Card", torch.FloatTensor([c]), e)
+                writer.add_scalar("Mean/30", torch.FloatTensor([mean_c]), e)
+                writer.add_scalar("Win rate, last 200", torch.FloatTensor([mean_w]), e)
+                writer.add_scalar("Win rate, total", torch.FloatTensor([mean_w_total]), e)
 
-            writer.add_scalar("Huristic Cards", torch.FloatTensor([huristic_cards]), e)
-            writer.add_scalar("Precomputed cards", torch.FloatTensor([precomputed_cards]), e)
-            writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
-            writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
+                writer.add_scalar("Huristic Cards", torch.FloatTensor([huristic_cards]), e)
+                writer.add_scalar("Precomputed cards", torch.FloatTensor([precomputed_cards]), e)
+                writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
+                writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
 
-            agent.nik_rate = agent.nik_rate * 0.9995 #Hyper parameter
-            writer.add_scalar("Huristics rate", torch.FloatTensor([agent.nik_rate]), e)
+                writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
+            if pred_mean > 0.70:
+                reg_agent.nik_rate = reg_agent.nik_rate * 0.9995  # Hyper parameter
 
-            if e % agent.save_every == 0:
-                agent.save(e)
+            if e % reg_agent.save_every == 0:
+                reg_agent.save(e)
 
             if external_board:
                 sleep(5)

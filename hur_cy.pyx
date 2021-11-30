@@ -24,7 +24,7 @@ cpdef int nikolai(board):
             aces.append(0)
         else:
             aces.append(1)
-    card = board.card
+    #card = board.card
 
     deck = []
     prob = np.zeros(10)

@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 import math
 import numpy as np
+
 from hur_cy import nikolai
 import random as rn
 from functools import lru_cache
@@ -27,7 +28,11 @@ class MCTS:
 
     @lru_cache(1000*3)
     def huristic(self, board):
-        return nikolai(board)
+        fq = board.find_quick()
+        if fq is None:
+            return nikolai(board)
+        else:
+            return board.make_move(fq)
 
 
     def choose(self, node):
@@ -74,28 +79,28 @@ class MCTS:
                 return path
             unexplored = self.children[node] - self.children.keys()
             if unexplored:
-
-
                 if node.turn:
-                    if rn.random() > self.nik_rate:
-                        nik_play = self.huristic(node)
-                        if nik_play in unexplored:
-                            n = nik_play
+                    fq = node.find_quick()
+                    if fq is not None:
+                        n = node.make_move(fq)
                     else:
-                        max = -math.inf
-                        for each in unexplored:
-                            score = self.agent.act(each)
-                            if score > max:
-                                max = score
-                                winner = each
-                        n = winner
-                        self.F[n] = max
+                        if rn.random() > self.nik_rate:
+                            n = self.net_select(unexplored, node)
+                        else:
+                            nik_play = node.make_move(self.huristic(node))
+
+                            if nik_play in unexplored:
+                                n = nik_play
+                            else:
+                                n = self.net_select(unexplored, node)
+
 
                 else:
                     n = node.find_random_child()
 
                 path.append(n)
                 return path
+
             node = self._uct_select(node)  # descend a layer deeper
 
     def _expand(self, node):
@@ -111,20 +116,18 @@ class MCTS:
             if node.is_terminal():
                 return node.reward()
             if node.turn:
-                net_total_prediction = False
-                if net_total_prediction:
-                    return self.agent.act(node)
-                if rn.random() > self.agent.nik_rate:
-                    for each in node.find_children(node):
-                        score = self.agent.act(each)
-                        max = -math.inf
-                        if score > max:
-                            max = score
-                            winner = each
-                    node = winner
+                fq = node.find_quick()
+                if fq is not None:
+                    node = node.make_move(fq)
                 else:
-                    nik_play = self.huristic(node)
-                    node = node.make_move(nik_play)
+                    net_total_prediction = False
+                    if net_total_prediction:
+                        return self.agent.act(node)
+                    if rn.random() > self.agent.nik_rate:
+                        node = self.net_select(node.find_children(), node)
+                    else:
+                        nik_play = self.huristic(node)
+                        node = node.make_move(nik_play)
             else:
                 node = node.find_random_child()
 
@@ -164,6 +167,26 @@ class MCTS:
         else:
             return node.find_random_child()
 
+    def net_select(self, nodes, original):
+        scores = []
+        for each in nodes:
+
+            if not each.is_terminal:
+                score = 0
+            else:
+                score = self.agent.act(each)
+            scores.append((score, each))
+
+        def getmax(x):
+            return x[0]
+
+        winner = max(scores, key=getmax)
+        if winner[0] == 0:
+            winner = original.make_move(self.huristic(original))
+        else:
+            winner = winner[1]
+
+        return winner
 
 
 

@@ -16,7 +16,7 @@ from monte_carlo_tree_search import Node
 _YB = namedtuple("YukonBoard", "piles deck card turn terminal")
 
 class YukonBoard(_YB, Node):
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def find_children(board, iso=False):
         if board.terminal:  # If the game is finished then no moves can be made
             return set()
@@ -31,19 +31,26 @@ class YukonBoard(_YB, Node):
             }
 
     def find_quick(board):
+        piles = len(board.piles)
+        children = board.find_children()
+        no_dupe_chrildren = set(children)
 
-        if len(board.find_children(iso=True)) == 1:
-            all_same = True
-        else:
-            all_same = False
+        if len(no_dupe_chrildren) == 1:
+            return rn.randint(0, piles - 1)
 
-        winners = []
-        for i in range(len(board.piles)):
-            test_board = board.make_move(i)
-            winners.append(test_board.is_terminal())
+        winners = [x.is_terminal() for x in no_dupe_chrildren]
 
-        num_terminal = winners.count(False)
-        return all_same, num_terminal, winners
+        num_non_terminal = winners.count(False)
+
+        if num_non_terminal == 0 and sum(board.deck) > 0:
+            return rn.randint(0, piles - 1)
+
+        if num_non_terminal == 1:
+            for i, test_board in enumerate(children):
+                if test_board.is_terminal():
+                    return i
+
+        return None
 
     def find_random_child(board):
         if board.turn:
@@ -51,14 +58,14 @@ class YukonBoard(_YB, Node):
         else:
             return board.make_move(0)
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def find_numbered_child(board, action):
         #if board.turn:
             #return board.make_move(action)
         #else:
         return board.make_move(action)
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def reward(board):
         if not board.terminal:
             raise RuntimeError(f"reward called on nonterminal board {board}")
@@ -87,7 +94,7 @@ class YukonBoard(_YB, Node):
     def is_exhausted(board):
         return board.exhausted
 
-
+    #@lru_cache(maxsize=300) LRU breaks randomness :(
     def make_move(board, index, iso=False):
 
 
@@ -119,7 +126,7 @@ class YukonBoard(_YB, Node):
 
         return YukonBoard(piles, deck, card, turn, is_terminal)
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=3000)
     def evaluate(board, index, iso):
         is_terminal = False
         pile = list(board.piles[index])
@@ -221,7 +228,7 @@ class YukonBoard(_YB, Node):
 
 
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def give_result(self, pile, card, result):
         if card == 1: # check 10
             if pile + card + 10 == result or pile + card == result:
@@ -230,7 +237,7 @@ class YukonBoard(_YB, Node):
             if pile + card == result:
                 return 1
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def expert(self):
         pileList = list(self.piles)
         beforeProbs21 = [0] * len(pileList)
@@ -311,7 +318,7 @@ class YukonBoard(_YB, Node):
 
         # return 0
 
-    @lru_cache(maxsize=10000)
+    @lru_cache(maxsize=300)
     def flatten(self):
         bits = []
         # board_states:

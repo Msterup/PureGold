@@ -109,13 +109,17 @@ e = 1
 
 
 win_list = []
+win_list.append(0)
 card_list = []
 card_list_moving = deque(maxlen=30)
+card_list_moving.append(0)
 win_list_moving = deque(maxlen=200)
+win_list_moving.append(0)
 t = []
 
 cards_trained = 0
 prediction_list_moving = deque(maxlen=1000)
+prediction_list_moving.append(0)
 for _ in range(1):
     prediction_list_moving.append(0)
 
@@ -130,7 +134,7 @@ while train:
     redis_cache_size = r.llen('train_boards')
     e += redis_cache_size
     if redis_cache_size == 0:
-        print("No boards in redis cache, waiting 10 seconds...")
+        print(f"Total boards: {e}. No boards in redis cache, waiting 10 seconds...")
         sleep(10)
     else:
         boards_to_train = []
@@ -141,22 +145,23 @@ while train:
 
         loss += reg_agent.redis_learn(boards_to_train)
 
-        if e + 100 < last_log_e:
-            loss_sum = loss/(last_log_e-e)
+        if e > last_log_e + 10:
+            loss_sum = loss/(e-last_log_e)
             loss = 0
+            last_log_e = e
             writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
             r.set('model', pickle.dumps(reg_agent))
             #
             #
             llen_cards = r.llen('cards')
             for i in range(llen_cards):
-                card_list_moving.append(r.lpop('cards'))
+                card_list_moving.append(int(r.lpop('cards')))
             mean_c = st.mean(card_list_moving)
             writer.add_scalar("Mean/30", torch.FloatTensor([mean_c]), e)
 
             llen_wr = r.llen('wr')
             for i in range(llen_wr):
-                win_list.append(r.lpop('wr'))
+                win_list.append(int(r.lpop('wr')))
             mean_w_total = st.mean(win_list)
             mean_w = st.mean(win_list[:200])
             writer.add_scalar("Win rate, last 200", torch.FloatTensor([mean_w]), e)
@@ -166,7 +171,7 @@ while train:
 
             llen_pred = r.llen('pred')
             for i in range(llen_pred):
-                prediction_list_moving.append(r.lpop('pred'))
+                prediction_list_moving.append(int(r.lpop('pred')))
             pred_mean = st.mean(prediction_list_moving)
             writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]), e)
             if pred_mean > 0.70:

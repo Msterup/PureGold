@@ -183,7 +183,6 @@ for e in range(5000):
     while True:
         if tree == None:
             tree = MCTS(reg_agent)
-        reg_agent.nik_rate = 0
 
         c += 1
         past = now
@@ -193,6 +192,7 @@ for e in range(5000):
         print(" ")
         print("----------------------")
         print(f"Current time {now} Delta_t {dt}")
+        print(f"Current hur rate is {reg_agent.nik_rate}")
         board.show(c, e)
         if board in precompute_cache:
             if precompute_cache_uses[board] >= 10:

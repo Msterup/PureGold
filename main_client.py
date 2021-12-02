@@ -92,7 +92,7 @@ else:
 
 savedir = 123
 
-r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+r = redis.Redis(host='10.250.14.4', port=6379, db=0)
 reg_agent = pickle.loads(r.get('model'))
 
 

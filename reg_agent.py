@@ -115,6 +115,20 @@ class RegAgent:
         print(f"Number of cached experiences: {len(self.memory)}")
         return sum_loss/num_experiences
 
+    def redis_learn(self, data):
+        sum_loss = 0
+        for input, label in data:
+            self.optimizer.zero_grad()
+            output = self.net.forward(input.tensorize())
+            label = torch.tensor([label])
+            loss = self.loss_fn(output, label)
+            loss.backward()
+            self.optimizer.step()
+            sum_loss += loss.item()
+
+
+        return sum_loss
+
 
 
     def save(self, e):

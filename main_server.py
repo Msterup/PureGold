@@ -95,7 +95,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-12-02T22-48-42/mario_net_1205.chkpt')
+checkpoint = Path('checkpoints/2021-12-02T23-58-51/mario_net_2400.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0)
@@ -146,7 +146,8 @@ while train:
 
         loss += reg_agent.redis_learn(boards_to_train)
 
-        if e > last_log_e + 4*30:
+        if len(boards_to_train) > 100:
+            rn.shuffle(boards_to_train)
             loss_sum = loss/(e-last_log_e)
             loss = 0
             last_log_e = e

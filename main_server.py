@@ -95,7 +95,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-11-26T23-40-04/mario_net_58.chkpt')
+checkpoint = Path('checkpoints/2021-12-02T22-48-42/mario_net_1205.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0)
@@ -127,6 +127,7 @@ train = True
 local_cache_size = 0
 e = 0
 last_log_e = 0
+last_save_e = 0
 loss = 0
 
 r.set('model', pickle.dumps(reg_agent))
@@ -145,7 +146,7 @@ while train:
 
         loss += reg_agent.redis_learn(boards_to_train)
 
-        if e > last_log_e + 10:
+        if e > last_log_e + 4*30:
             loss_sum = loss/(e-last_log_e)
             loss = 0
             last_log_e = e
@@ -167,14 +168,20 @@ while train:
             writer.add_scalar("Win rate, last 200", torch.FloatTensor([mean_w]), e)
             writer.add_scalar("Win rate, total", torch.FloatTensor([mean_w_total]), e)
 
-            #writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
+            writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
             llen_pred = r.llen('pred')
             for i in range(llen_pred):
                 prediction_list_moving.append(int(r.lpop('pred')))
             pred_mean = st.mean(prediction_list_moving)
             writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]), e)
-            if pred_mean > 0.70:
-                r.set('model', pickle.dumps(reg_agent))
+
+            r.set('model', pickle.dumps(reg_agent))
+
+            if pred_mean > 0.7 and mean_w > 0.2:
+                reg_agent.nik_rate = reg_agent.nik_rate - 0.0001
 
 
+        if e > last_save_e + 4*30*100:
+            last_save_e = e
+            reg_agent.save(e)

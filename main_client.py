@@ -4,6 +4,7 @@ from reg_agent import RegAgent
 from hur_cy import nikolai
 import sys, time, msvcrt
 import redis
+import multiprocessing as mp
 
 
 from collections import deque
@@ -102,19 +103,7 @@ first_board = new_YukonBoard()
 e = 1
 
 
-win_list = []
-card_list = []
-card_list_moving = deque(maxlen=30)
-win_list_moving = deque(maxlen=200)
-t = []
 
-cards_trained = 0
-prediction_list_moving = deque(maxlen=1000)
-for _ in range(1):
-    prediction_list_moving.append(0)
-
-current_goal = 20
-searches_def = 3000
 
 save_data = False
 if save_data:
@@ -137,22 +126,35 @@ def simulate(sim_board):
         sim_board = sim_board.make_move(0) #draw card
 
 
-now = datetime.datetime.now()
+
 
 
 print("")
 print("Please make sure all settings are correct")
-input("Press Enter to continue...")
+#input("Press Enter to continue...")
 
+num_workers = mp.cpu_count()
 
-for e in range(5000):
+#pool = mp.Pool(num_workers)
 
+def gameloop():
+    print("Process started!")
+    reg_agent = pickle.loads(r.get('model'))
+    now = datetime.datetime.now()
 
-    time_list = 53 * [0]
-    its_list = 53 * [0]
+    win_list = []
+    card_list = []
+    card_list_moving = deque(maxlen=30)
+    win_list_moving = deque(maxlen=200)
+    t = []
 
-    if external_board == True:
-        player.reset_real_game()
+    cards_trained = 0
+    prediction_list_moving = deque(maxlen=1000)
+    for _ in range(1):
+        prediction_list_moving.append(0)
+
+    current_goal = 20
+    searches_def = 3000
 
 
 
@@ -195,7 +197,7 @@ for e in range(5000):
         print(f"Current hur rate is {reg_agent.nik_rate}")
         board.show(c, e)
         if board in precompute_cache:
-            if precompute_cache_uses[board] >= 10:
+            if precompute_cache_uses[board] >= 5    :
                 del precompute_cache[board]
                 precompute_cache_uses[board] = 0
 
@@ -224,8 +226,8 @@ for e in range(5000):
                 #        sim_wins.append(simulate(board))
                 #        if all(sim_wins) == True and s == 99:
                 #                hur_solved = True
-    
-    
+
+
                 if hur_solved == True:
                     print("Solved by 100 huristic simulations")
                     winner = tree.huristic(board)
@@ -348,7 +350,7 @@ for e in range(5000):
                 #print(f"    reg_agent.act: Hits: {mm_hits}, Miss: {mm_miss}, Rate: {mm_hits / (mm_hits + mm_miss)}")
 
                 pred_mean = st.mean(prediction_list_moving)
-                
+
                 if logging:
                     writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]),
                                   cards_trained)
@@ -451,10 +453,9 @@ for e in range(5000):
                 board = board.make_move(drawn_card)
             else:
                 board = board.make_move(0)  # draw a a card
-# All games now played
 
-open_file = open(file_name, "wb")
-pickle.dump(master_won_game_list, open_file)
-open_file.close()
-print(f"Number of samples in won games list: {len(master_won_game_list)}")
 
+if __name__ == '__main__':
+    for i in range(num_workers):
+        p = mp.Process(target=gameloop)
+        p.start()

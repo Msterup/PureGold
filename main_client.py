@@ -210,7 +210,7 @@ def gameloop():
             print(f"Current time {now} Delta_t {dt}")
             print(f"Current hur rate is {reg_agent.nik_rate}")
             board.show(c, e)
-            if use precompute:
+            if use_precompute:
                 if board in precompute_cache:
                     if precompute_cache_uses[board] >= 5    :
                         del precompute_cache[board]

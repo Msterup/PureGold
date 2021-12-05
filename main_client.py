@@ -450,8 +450,7 @@ def gameloop():
                     writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
 
-                if e % 5 == 0:
-                    reg_agent = pickle.loads(r.get('model'))
+                reg_agent = pickle.loads(r.get('model'))
 
                 if external_board:
                     sleep(5)

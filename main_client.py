@@ -93,7 +93,7 @@ else:
 
 savedir = 123
 
-r = redis.Redis(host='10.250.14.4', port=6379, db=0)
+r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 reg_agent = pickle.loads(r.get('model'))
 
 
@@ -140,6 +140,16 @@ num_workers = mp.cpu_count()
 def gameloop():
     print("Process started!")
     while True:
+        is_run = r.get('is_run')
+
+        if is_run == 0:
+            print("is_run was set to 0, sleeping 5 minutes and retrying")
+            sleep(60*5)
+            continue
+        else:
+            print("is_run was set to 1, running script")
+
+
 
         reg_agent = pickle.loads(r.get('model'))
         now = datetime.datetime.now()

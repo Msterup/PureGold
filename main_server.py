@@ -98,7 +98,7 @@ save_dir.mkdir(parents=True)
 checkpoint = Path('checkpoints/2021-12-02T23-58-51/mario_net_2400.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
-r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 
 
 
@@ -131,6 +131,7 @@ last_save_e = 0
 loss = 0
 
 r.set('model', pickle.dumps(reg_agent))
+boards_to_train = []
 while train:
     redis_cache_size = r.llen('train_boards')
     e += redis_cache_size
@@ -138,7 +139,7 @@ while train:
         print(f"Total boards: {e}. No boards in redis cache, waiting 10 seconds...")
         sleep(10)
     else:
-        boards_to_train = []
+
         print(f"Getting {redis_cache_size} boards..")
         for i in range(redis_cache_size):
             boards_to_train.append(pickle.loads(r.lpop('train_boards')))
@@ -165,7 +166,7 @@ while train:
             for i in range(llen_wr):
                 win_list.append(int(r.lpop('wr')))
             mean_w_total = st.mean(win_list)
-            mean_w = st.mean(win_list[:200])
+            mean_w = st.mean(win_list[-200:])
             writer.add_scalar("Win rate, last 200", torch.FloatTensor([mean_w]), e)
             writer.add_scalar("Win rate, total", torch.FloatTensor([mean_w_total]), e)
 
@@ -181,6 +182,8 @@ while train:
 
             if pred_mean > 0.7 and mean_w > 0.2:
                 reg_agent.nik_rate = reg_agent.nik_rate - 0.0001
+
+            boards_to_train = []
 
 
         if e > last_save_e + 4*30*100:

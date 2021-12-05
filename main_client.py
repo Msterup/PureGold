@@ -77,6 +77,8 @@ if use_precompute:
     print("Warning! Using precompute")
 else:
     print("Not using precompute!")
+    precompute_cache = None
+    precompute_cache_uses = None
 
 
 

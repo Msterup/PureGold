@@ -210,14 +210,16 @@ def gameloop():
             print(f"Current time {now} Delta_t {dt}")
             print(f"Current hur rate is {reg_agent.nik_rate}")
             board.show(c, e)
-            if board in precompute_cache:
-                if precompute_cache_uses[board] >= 5    :
-                    del precompute_cache[board]
-                    precompute_cache_uses[board] = 0
+            if use precompute:
+                if board in precompute_cache:
+                    if precompute_cache_uses[board] >= 5    :
+                        del precompute_cache[board]
+                        precompute_cache_uses[board] = 0
 
-            if use_precompute and board in precompute_cache:
-                winner = precompute_cache[board]
-                precompute_cache_uses[board] += 1
+            if use_precompute: 
+                if board in precompute_cache:
+                    winner = precompute_cache[board]
+                    precompute_cache_uses[board] += 1
 
 
                 precomputed_cards += 1

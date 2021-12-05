@@ -95,7 +95,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-12-02T23-58-51/mario_net_2400.chkpt')
+checkpoint = None # Path('checkpoints/2021-12-02T23-58-51/mario_net_2400.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')

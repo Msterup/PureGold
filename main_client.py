@@ -70,7 +70,7 @@ def new_YukonBoard():
 
 # Hyperparamaters
 
-use_precompute = True
+use_precompute = False
 if use_precompute:
     precompute_cache = dict()
     precompute_cache_uses = dict()
@@ -140,7 +140,7 @@ num_workers = mp.cpu_count()
 def gameloop():
     print("Process started!")
     while True:
-        is_run = r.get('is_run')
+        is_run = int(r.get('is_run'))
 
         if is_run == 0:
             print("is_run was set to 0, sleeping 5 minutes and retrying")
@@ -468,6 +468,7 @@ def gameloop():
 
 
 if __name__ == '__main__':
+    #num_workers = 1
     for i in range(num_workers):
         p = mp.Process(target=gameloop)
         p.start()

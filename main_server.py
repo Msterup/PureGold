@@ -95,10 +95,10 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = None # Path('checkpoints/2021-12-02T23-58-51/mario_net_2400.chkpt')
+checkpoint = Path('checkpoints/2021-12-05T14-08-33/mario_net_100551.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
-r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
+r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 
 
@@ -129,25 +129,27 @@ e = 0
 last_log_e = 0
 last_save_e = 0
 loss = 0
-
+reg_agent.nik_rate = 0
 r.set('model', pickle.dumps(reg_agent))
 boards_to_train = []
 while train:
-    redis_cache_size = r.llen('train_boards')
+    actual_redis_cache_size = r.llen('train_boards')
+    redis_cache_size = min(actual_redis_cache_size, 100)
     e += redis_cache_size
     if redis_cache_size == 0:
         print(f"Total boards: {e}. No boards in redis cache, waiting 10 seconds...")
         sleep(10)
     else:
 
-        print(f"Getting {redis_cache_size} boards..")
+        print(f"Getting {redis_cache_size} boards.. {actual_redis_cache_size -redis_cache_size} left for next training.")
         for i in range(redis_cache_size):
             boards_to_train.append(pickle.loads(r.lpop('train_boards')))
 
 
-        loss += reg_agent.redis_learn(boards_to_train)
+
 
         if len(boards_to_train) > 100:
+            loss += reg_agent.redis_learn(boards_to_train)
             rn.shuffle(boards_to_train)
             loss_sum = loss/(e-last_log_e)
             loss = 0

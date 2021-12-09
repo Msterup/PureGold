@@ -24,13 +24,13 @@ class MCTS:
         self.F = defaultdict(float)  # total visit count for each node
         self.children = dict()  # children of each node
         self.exploration_weight = exploration_weight
-        self.nik_rate = 1
+
 
     @lru_cache(1000*3)
     def huristic(self, board):
         fq = board.find_quick()
         if fq is None:
-            return nikolai(board)
+            return board.make_move(nikolai(board))
         else:
             return board.make_move(fq)
 
@@ -84,10 +84,10 @@ class MCTS:
                     if fq is not None:
                         n = node.make_move(fq)
                     else:
-                        if rn.random() > self.nik_rate:
+                        if rn.random() > self.agent.nik_rate:
                             n = self.net_select(unexplored, node)
                         else:
-                            nik_play = node.make_move(self.huristic(node))
+                            nik_play = self.huristic(node)
 
                             if nik_play in unexplored:
                                 n = nik_play

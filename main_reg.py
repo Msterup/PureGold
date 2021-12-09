@@ -94,7 +94,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-11-26T23-40-04/mario_net_58.chkpt')
+checkpoint = Path('checkpoints/2021-12-07T13-47-09/mario_net_21623.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 
@@ -129,7 +129,7 @@ if save_data:
 
 def simulate(sim_board):
     while True:
-        sim_board = sim_board.make_move(tree.huristic(sim_board))
+        sim_board = tree.huristic(sim_board)
 
         if sim_board.terminal or sum(sim_board.deck) == 0:
             if sum(sim_board.deck) == 0:
@@ -208,6 +208,7 @@ for e in range(5000):
 
             precomputed_cards += 1
             print(f"This board was already computed - winner is {winner}")
+
         else:
             s = 0
             sim_wins = []
@@ -221,11 +222,11 @@ for e in range(5000):
 
             else:
                 # Enable or disable hur_solve
-                #while s < 100 and hur_solved == False:
-                #        s += 1
-                #        sim_wins.append(simulate(board))
-                #        if all(sim_wins) == True and s == 99:
-                #                hur_solved = True
+                while s < 100 and hur_solved == False:
+                        s += 1
+                        sim_wins.append(simulate(board))
+                        if all(sim_wins) == True and s == 99:
+                                hur_solved = True
     
     
                 if hur_solved == True:

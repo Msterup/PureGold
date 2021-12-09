@@ -6,10 +6,8 @@ import sys, time, msvcrt
 import redis
 import multiprocessing as mp
 
-
 from collections import deque
 import random as rn
-
 
 import pickle
 import torch
@@ -23,12 +21,8 @@ import datetime
 
 from time import sleep
 
-
 is_CUDA_available = torch.cuda.is_available()
 print(f"Checking CUDA avaliability.. {is_CUDA_available}")
-
-
-
 
 piles = 4
 
@@ -41,16 +35,14 @@ if piles == 5:
 if piles == 6:
     dbindex = 0
 
-
-
 logging = False
 if logging:
     from torch.utils.tensorboard import SummaryWriter
+
     writer = SummaryWriter()
     print("Using logging on tensorboard.")
 else:
     print("Warning! Not using logging!")
-
 
 
 def new_YukonBoard():
@@ -80,12 +72,11 @@ else:
     precompute_cache = None
     precompute_cache_uses = None
 
-
-
 external_board = False
 
 if external_board == True:
     from myplayer import Player
+
     player = Player(piles)
     print("Playing with external board..")
     if player.is_cards_configured == False or player.is_settings_configured == False:
@@ -98,14 +89,9 @@ savedir = 123
 r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 reg_agent = pickle.loads(r.get('model'))
 
-
-
 first_board = new_YukonBoard()
 
 e = 1
-
-
-
 
 save_data = False
 if save_data:
@@ -116,6 +102,7 @@ if save_data:
     open_file.close()
     master_won_game_list = []
 
+
 def simulate(sim_board):
     while True:
         sim_board = sim_board.make_move(tree.huristic(sim_board))
@@ -125,33 +112,30 @@ def simulate(sim_board):
                 return True
             else:
                 return False
-        sim_board = sim_board.make_move(0) #draw card
-
-
-
+        sim_board = sim_board.make_move(0)  # draw card
 
 
 print("")
 print("Please make sure all settings are correct")
-#input("Press Enter to continue...")
+# input("Press Enter to continue...")
 
 num_workers = mp.cpu_count()
 
-#pool = mp.Pool(num_workers)
+
+# pool = mp.Pool(num_workers)
 
 def gameloop():
     print("Process started!")
     while True:
         is_run = int(r.get('is_run'))
+        is_run = 1
 
         if is_run == 0:
             print("is_run was set to 0, sleeping 5 minutes and retrying")
-            sleep(60*5)
+            sleep(60 * 5)
             continue
         else:
             print("is_run was set to 1, running script")
-
-
 
         reg_agent = pickle.loads(r.get('model'))
         now = datetime.datetime.now()
@@ -170,10 +154,6 @@ def gameloop():
         current_goal = 20
         searches_def = 3000
 
-
-
-
-
         board = first_board
 
         if external_board:
@@ -181,7 +161,7 @@ def gameloop():
             drawn_card = player.draw_card()
             board = board.make_move(drawn_card)
         else:
-            board = board.make_move(0) # draw a a card
+            board = board.make_move(0)  # draw a a card
         temp_won_game_list = []
 
         hur_solved = False
@@ -189,8 +169,6 @@ def gameloop():
         huristic_cards = 0
         precomputed_cards = 0
         one_option_cards = 0
-
-
 
         c = 0
 
@@ -212,15 +190,14 @@ def gameloop():
             board.show(c, e)
             if use_precompute:
                 if board in precompute_cache:
-                    if precompute_cache_uses[board] >= 5    :
+                    if precompute_cache_uses[board] >= 5:
                         del precompute_cache[board]
                         precompute_cache_uses[board] = 0
 
-            if use_precompute: 
+            if use_precompute:
                 if board in precompute_cache:
                     winner = precompute_cache[board]
                     precompute_cache_uses[board] += 1
-
 
                 precomputed_cards += 1
                 print(f"This board was already computed - winner is {winner}")
@@ -237,12 +214,11 @@ def gameloop():
 
                 else:
                     # Enable or disable hur_solve
-                    #while s < 100 and hur_solved == False:
+                    # while s < 100 and hur_solved == False:
                     #        s += 1
                     #        sim_wins.append(simulate(board))
                     #        if all(sim_wins) == True and s == 99:
                     #                hur_solved = True
-
 
                     if hur_solved == True:
                         print("Solved by 100 huristic simulations")
@@ -268,8 +244,8 @@ def gameloop():
                                 n0 = len(test_list)
                                 if len(test_list) > 4:
                                     S = st.stdev(test_list)
-                                    T = scipy.stats.t.interval(alpha, len(test_list)-1, loc=0, scale=1)[-1]
-                                    h0 = T*(S/math.sqrt(n0-1))
+                                    T = scipy.stats.t.interval(alpha, len(test_list) - 1, loc=0, scale=1)[-1]
+                                    h0 = T * (S / math.sqrt(n0 - 1))
 
                                     sort_score = score[-4:]
                                     sort_score = set(sort_score)
@@ -280,7 +256,7 @@ def gameloop():
                                         last_item = this_item
                                         this_item = each
 
-                                    h = (this_item-last_item)/(4) #More MCTS
+                                    h = (this_item - last_item) / (4)  # More MCTS
                                     if h == 0:
                                         # Avoid div by zero
                                         continue
@@ -289,13 +265,14 @@ def gameloop():
                                         winner = tree.huristic(board)
                                         print(f"All scores zero - using huristics and braking training.")
 
-                                    N = n0*(h0/h)**2
+                                    N = n0 * (h0 / h) ** 2
 
                                     if N < _:
-                                        print(f"Rosetti says: Number of samples is appropriate after {N}. Actual samples run is {_}")
+                                        print(
+                                            f"Rosetti says: Number of samples is appropriate after {N}. Actual samples run is {_}")
                                         break
 
-                            if _ == searches_def-1:
+                            if _ == searches_def - 1:
                                 print(f"Max searches reached at N = {searches_def}. Rosetti suggests {N}.")
 
                         score, winner = tree.choose(board)
@@ -304,8 +281,8 @@ def gameloop():
                             print(f"All scores zero - using huristics")
 
                         predictions = []
-                        for each in range(1,piles+1):
-                            future_board = board.make_move(each-1)
+                        for each in range(1, piles + 1):
+                            future_board = board.make_move(each - 1)
                             future_score = score[each]
                             pushval = (future_board, future_score)
                             r.lpush('train_boards', pickle.dumps(pushval))
@@ -315,13 +292,7 @@ def gameloop():
 
                         pred_card = np.argmax(predictions)
 
-
-
-
                         prediction = reg_agent.act(future_board)
-
-
-
 
                         print(" ")
                         print(f"Scores vs predictions:         Score of current state:  {score[0]}")
@@ -336,11 +307,6 @@ def gameloop():
                         print(f"Winning option was    {winner}")
                         print("")
 
-
-
-
-
-
                         if pred_card == winner:
                             prediction_list_moving.append(True)
                             r.lpush('pred', 1)
@@ -354,35 +320,33 @@ def gameloop():
                             r.lpush('pred', 0)
                             print("Neural net was wrong!")
 
-
                     hur_hits, hur_miss, _, _ = tree.huristic.cache_info()
                     act_hits, act_miss, _, _ = reg_agent.act.cache_info()
-                    #mm_hits , mm_miss , _, _ = board.make_move.cache_info()
+                    # mm_hits , mm_miss , _, _ = board.make_move.cache_info()
 
                     print(f"Memorization information: ")
                     print(f"Items in tree: {len(tree.children)}")
-                    print(f"    Huristics: Hits: {hur_hits}, Miss: {hur_miss}, Rate: {hur_hits/(hur_hits+hur_miss)}")
-                    print(f"    reg_agent.act: Hits: {act_hits}, Miss: {act_miss}, Rate: {act_hits/(act_hits+act_miss)}")
-                    #print(f"    reg_agent.act: Hits: {mm_hits}, Miss: {mm_miss}, Rate: {mm_hits / (mm_hits + mm_miss)}")
+                    print(
+                        f"    Huristics: Hits: {hur_hits}, Miss: {hur_miss}, Rate: {hur_hits / (hur_hits + hur_miss)}")
+                    print(
+                        f"    reg_agent.act: Hits: {act_hits}, Miss: {act_miss}, Rate: {act_hits / (act_hits + act_miss)}")
+                    # print(f"    reg_agent.act: Hits: {mm_hits}, Miss: {mm_miss}, Rate: {mm_hits / (mm_hits + mm_miss)}")
 
                     pred_mean = st.mean(prediction_list_moving)
 
                     if logging:
                         writer.add_scalar("Prediction mean of last 1000", torch.FloatTensor([pred_mean]),
-                                      cards_trained)
+                                          cards_trained)
                     pred_loss = 0
                     if not hur_solved:
                         for i in range(4):
-                            pred_loss += abs(score[i]-predictions[i])
+                            pred_loss += abs(score[i] - predictions[i])
 
                     if logging:
                         writer.add_scalar("Prediction loss", torch.FloatTensor([pred_loss]),
-                                      cards_trained)
+                                          cards_trained)
 
                     cards_trained += 1
-
-
-
 
             if external_board == True:
                 player.get_real_action(winner, board, drawn_card)
@@ -392,16 +356,12 @@ def gameloop():
                 if board not in precompute_cache_uses:
                     precompute_cache_uses[board] = 0
 
-
             board = board.make_move(winner)
-
-
-
 
             if board.terminal or sum(board.deck) == 0:
                 past = now
                 now = datetime.datetime.now()
-                dt = now-past
+                dt = now - past
 
                 print(" ")
                 print("----------------------")
@@ -420,10 +380,10 @@ def gameloop():
                 mean_c = st.mean(card_list_moving)
 
                 if not current_goal == 52:
-                    if current_goal < mean_c+2:
+                    if current_goal < mean_c + 2:
                         current_goal += 1
 
-                #log results
+                # log results
 
                 if sum(board.deck) == 0:
                     print("win")
@@ -452,7 +412,6 @@ def gameloop():
                     writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
 
                     writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
-
 
                 reg_agent = pickle.loads(r.get('model'))
 

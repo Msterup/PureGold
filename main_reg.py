@@ -129,7 +129,7 @@ if save_data:
 
 def simulate(sim_board):
     while True:
-        sim_board = tree.huristic(sim_board)
+        sim_board = (sim_board)
 
         if sim_board.terminal or sum(sim_board.deck) == 0:
             if sum(sim_board.deck) == 0:
@@ -137,6 +137,16 @@ def simulate(sim_board):
             else:
                 return False
         sim_board = sim_board.make_move(0) #draw card
+
+def get_move(board, future_board):
+    winner = None
+    for i in range(piles):
+        if board.make_move(i) == future_board:
+            winner = i
+            break
+
+    assert winner is not None, "Winner is none - Future board not a child of current board?"
+    return winner
 
 
 now = datetime.datetime.now()
@@ -231,7 +241,7 @@ for e in range(5000):
     
                 if hur_solved == True:
                     print("Solved by 100 huristic simulations")
-                    winner = tree.huristic(board)
+                    winner = get_move(board, tree.huristic(board))
                     score = [1001]
                     huristic_cards += 1
 
@@ -265,13 +275,13 @@ for e in range(5000):
                                     last_item = this_item
                                     this_item = each
 
-                                h = (this_item-last_item)/(4) #More MCTS
+                                h = (this_item-last_item)/(2) #More MCTS
                                 if h == 0:
                                     # Avoid div by zero
                                     continue
 
                                 if all([x == 0 for x in score]) and _ > 750:
-                                    winner = tree.huristic(board)
+                                    winner = get_move(board, tree.huristic(board))
                                     print(f"All scores zero - using huristics and braking training.")
 
                                 N = n0*(h0/h)**2
@@ -285,7 +295,7 @@ for e in range(5000):
 
                     score, winner = tree.choose(board)
                     if all([x == 0 for x in score]):
-                        winner = tree.huristic(board)
+                        winner = get_move(board, tree.huristic(board))
                         print(f"All scores zero - using huristics")
 
                     predictions = []
@@ -315,7 +325,7 @@ for e in range(5000):
                     print(score)
                     print(predictions)
                     print(" ")
-                    print(f"Huristic option was   {tree.huristic(board)}")
+                    print(f"Huristic option was   {get_move(board, tree.huristic(board))}")
                     print(f"Neural net option was {pred_card}")
                     print(f"Winning option was    {winner}")
                     print("")

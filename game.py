@@ -48,8 +48,8 @@ class YukonBoard(_YB, Node):
         if num_non_terminal == 1:
             for i in range(len(board.piles)):
                 if board.make_move(i).is_terminal() == False:
-                    winner = i
-                    break
+                    return i
+
 
         return None
 

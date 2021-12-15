@@ -127,7 +127,7 @@ num_workers = mp.cpu_count()
 def gameloop():
     print("Process started!")
     while True:
-        is_run = int(r.get('is_run'))
+        is_run = 1
 
         if is_run == 0:
             print("is_run was set to 0, sleeping 5 minutes and retrying")

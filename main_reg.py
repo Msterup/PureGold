@@ -94,7 +94,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-12-07T13-47-09/mario_net_21623.chkpt')
+checkpoint = Path('checkpoints/2021-12-15T20-16-46/mario_net_4.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 

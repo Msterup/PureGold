@@ -429,8 +429,4 @@ def gameloop():
 
 
 if __name__ == '__main__':
-    num_workers = int(num_workers/2)
-    #num_workers = 1
-    for i in range(num_workers):
-        p = mp.Process(target=gameloop)
-        p.start()
+    gameloop()

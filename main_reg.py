@@ -151,7 +151,7 @@ def get_move(board, future_board):
 
 now = datetime.datetime.now()
 
-do_100_of_each = False
+do_100_of_each = True
 
 print(f"Do 100 of each option before starting proper MCTS? {do_100_of_each}")
 

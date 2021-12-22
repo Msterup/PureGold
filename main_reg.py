@@ -94,7 +94,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-12-15T20-16-46/mario_net_4.chkpt')
+checkpoint = Path('checkpoints/2021-12-17T00-08-50/mario_net_4804.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 
@@ -150,6 +150,10 @@ def get_move(board, future_board):
 
 
 now = datetime.datetime.now()
+
+do_100_of_each = False
+
+print(f"Do 100 of each option before starting proper MCTS? {do_100_of_each}")
 
 
 print("")
@@ -246,10 +250,11 @@ for e in range(5000):
                     huristic_cards += 1
 
                 if not hur_solved:
-                    for each in board.find_children():
-                        if each.is_terminal:
-                            for _ in range(100):
-                                tree.do_rollout(each)
+                    if do_100_of_each:
+                        for each in board.find_children():
+                            if each.is_terminal:
+                                for _ in range(100):
+                                    tree.do_rollout(each)
 
                     # prob good: alpha = 0.9999995
                     alpha = 0.999999995

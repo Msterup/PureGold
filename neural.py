@@ -57,7 +57,7 @@ class ResidualBlock(nn.Module):
         self.fc1 = nn.Linear(in_channels, out_channels)
         self.fc2 = nn.Linear(in_channels, out_channels)
         self.fc3 = nn.Linear(in_channels, out_channels)
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU(inplace=False)
 
 
     def forward(self, x):

@@ -404,7 +404,7 @@ for e in range(5000):
             print(f"Current time {now} Delta_t {dt}")
             board.show(c, e)
 
-            learn = False
+            learn = True
             if len(reg_agent.memory) >= reg_agent.recall_min and learn:
                 loss_sum = reg_agent.learn()
             else:

@@ -210,18 +210,21 @@ for e in range(5000):
         print("----------------------")
         print(f"Current time {now} Delta_t {dt}")
         board.show(c, e)
-        if board in precompute_cache:
-            if precompute_cache_uses[board] >= 10:
-                del precompute_cache[board]
-                precompute_cache_uses[board] = 0
-
-        if use_precompute and board in precompute_cache:
-            winner = precompute_cache[board]
-            precompute_cache_uses[board] += 1
+        if use_precompute:
+            if board in precompute_cache:
+                if precompute_cache_uses[board] >= 10:
+                    del precompute_cache[board]
+                    precompute_cache_uses[board] = 0
 
 
-            precomputed_cards += 1
-            print(f"This board was already computed - winner is {winner}")
+            if board in precompute_cache:
+
+                winner = precompute_cache[board]
+                precompute_cache_uses[board] += 1
+
+
+                precomputed_cards += 1
+                print(f"This board was already computed - winner is {winner}")
 
         else:
             s = 0

@@ -68,7 +68,7 @@ def new_YukonBoard():
 
 # Hyperparamaters
 
-use_precompute = True
+use_precompute = False
 if use_precompute:
     precompute_cache = dict()
     precompute_cache_uses = dict()
@@ -404,7 +404,7 @@ for e in range(5000):
             print(f"Current time {now} Delta_t {dt}")
             board.show(c, e)
 
-            learn = True
+            learn = False
             if len(reg_agent.memory) >= reg_agent.recall_min and learn:
                 loss_sum = reg_agent.learn()
             else:

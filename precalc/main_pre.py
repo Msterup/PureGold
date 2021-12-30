@@ -43,7 +43,7 @@ if piles == 5:
 if piles == 6:
     dbindex = 0
 
-logging = False
+logging = True
 if logging:
     from torch.utils.tensorboard import SummaryWriter
 
@@ -159,7 +159,7 @@ def gameloop():
             prediction_list_moving.append(0)
 
         current_goal = 20
-        searches_def = 3000
+        searches_def = 3000 * 2
 
         board = first_board
 

@@ -343,8 +343,7 @@ class YukonBoard(_YB, Node):
         else:
             flat = flat + (format(self.card, '04b'))
         # deck states for deck 1-9
-        deck_state = globals.possible_deck_states[self.deck[0]][self.deck[1]][self.deck[2]][self.deck[3]][self.deck[4]][
-            self.deck[5]][self.deck[6]][self.deck[7]][self.deck[8]]
+        deck_state = globals.possible_deck_states[self.deck[0]][self.deck[1]][self.deck[2]][self.deck[3]][self.deck[4]][self.deck[5]][self.deck[6]][self.deck[7]][self.deck[8]]
         flat = flat + (format(deck_state, '021b'))
         # remember 10'ers
         flat = flat + (format(self.deck[9], '05b'))

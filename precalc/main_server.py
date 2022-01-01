@@ -104,7 +104,7 @@ save_dir.mkdir(parents=True)
 checkpoint = Path('checkpoints/model/mario_net.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
-r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
+r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
 
 
 

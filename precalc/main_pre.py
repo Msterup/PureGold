@@ -92,7 +92,6 @@ if external_board == True:
 else:
     print("NOT playing with external board..")
 
-a = 1
 
 savedir = 123
 

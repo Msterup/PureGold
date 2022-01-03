@@ -96,12 +96,9 @@ a = 1
 
 savedir = 123
 
-<<<<<<< HEAD
-r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
-=======
 r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 #r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
->>>>>>> ba2d3c879176fe8012b3ec4823f567a61f11bc2f
+
 reg_agent = pickle.loads(r.get('model'))
 
 first_board = new_YukonBoard()

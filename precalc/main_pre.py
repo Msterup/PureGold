@@ -92,6 +92,8 @@ if external_board == True:
 else:
     print("NOT playing with external board..")
 
+a = 1
+
 savedir = 123
 
 r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')

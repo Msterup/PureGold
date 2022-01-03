@@ -439,7 +439,7 @@ def gameloop():
 
 if __name__ == '__main__':
 
-    gameloop()
+    #gameloop()
 
     num_workers = int(math.ceil(num_workers/4))
     #num_workers = 1

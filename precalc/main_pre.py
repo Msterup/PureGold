@@ -70,7 +70,7 @@ def new_YukonBoard():
 
 # Hyperparamaters
 
-use_precompute = False
+use_precompute = True
 if use_precompute:
     precompute_cache = dict()
     precompute_cache_uses = dict()
@@ -92,9 +92,16 @@ if external_board == True:
 else:
     print("NOT playing with external board..")
 
+a = 1
+
 savedir = 123
 
+<<<<<<< HEAD
 r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
+=======
+r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
+#r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
+>>>>>>> ba2d3c879176fe8012b3ec4823f567a61f11bc2f
 reg_agent = pickle.loads(r.get('model'))
 
 first_board = new_YukonBoard()
@@ -134,7 +141,9 @@ num_workers = mp.cpu_count()
 
 def gameloop():
     print("Process started!")
+    e = -1
     while True:
+        e += 1
         is_run = int(r.get('is_run'))
 
         if is_run == 0:
@@ -195,12 +204,16 @@ def gameloop():
             print(f"Current time {now} Delta_t {dt}")
             print(f"Current hur rate is {reg_agent.nik_rate}")
             board.show(c, e)
+            winner = None
             if use_precompute:
                 board_flat = board.flatten()
                 if r.exists(str(board_flat)):
                     winner = int(r.get(board_flat))
                     precomputed_cards += 1
-                    print(f"This board was already computed - winner is {winner}")
+
+            if winner is not None:
+                print(f"This board was already computed - winner is {winner}")
+
             else:
                 s = 0
                 sim_wins = []
@@ -354,11 +367,6 @@ def gameloop():
             if external_board == True:
                 player.get_real_action(winner, board, drawn_card)
 
-            if use_precompute and c < 15:
-                precompute_cache[board] = winner
-                if board not in precompute_cache_uses:
-                    precompute_cache_uses[board] = 0
-
             board = board.make_move(winner)
 
             if board.terminal or sum(board.deck) == 0:
@@ -434,9 +442,9 @@ def gameloop():
 
 if __name__ == '__main__':
 
-    #gameloop()
+    gameloop()
 
-    num_workers = int(num_workers/2)
+    num_workers = int(math.ceil(num_workers/4))
     #num_workers = 1
     for i in range(num_workers):
         p = mp.Process(target=gameloop)

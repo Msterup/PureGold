@@ -23,7 +23,7 @@ class Player:
         self.is_settings_configured = False
         self.is_cards_configured = False
         self.coords = None
-        self.buttons = ['find_game', 'tutorial_x', 'card_pos', 'pile0', 'pile1', 'pile2', 'pile3', 'return_lobby']
+        self.buttons = ['hard_game','find_game', 'tutorial_x', 'card_pos', 'pile0', 'pile1', 'pile2', 'pile3', 'return_lobby']
         self.possible_cards = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
 
         self.settings = {}
@@ -52,8 +52,9 @@ class Player:
         self.mouse.release(Button.left)
 
     def reset_real_game(self):
-        sleep(5)
         self.click_pos('return_lobby')
+        sleep(5)
+        self.click_pos('hard_game')
         sleep(5)
         self.click_pos('find_game')
         sleep(5)
@@ -63,14 +64,15 @@ class Player:
 
 
     def get_card_img(self):
-        d = 28
-        x = self.settings['card_pos'][0]-d
-        y = self.settings['card_pos'][1]-d
+        d = 20
+        x = 680 #self.settings['card_pos'][0]-d
+        y = 890 #self.settings['card_pos'][1]-d
 
         dx = x+(d*2)
         dy = y+(d*2)
 
         img = ImageGrab.grab(bbox=(x, y, dx, dy))  # x, y, w, h
+        #img.show()
         img = np.array(img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         thresh = 127

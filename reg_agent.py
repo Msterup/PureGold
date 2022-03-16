@@ -10,12 +10,10 @@ import itertools
 from functools import lru_cache
 
 
-
-
 class RegAgent:
     def __init__(self, save_dir, checkpoint=None):
         self.save_dir = save_dir
-        self.net = ResNet(ResidualBlock, 3)
+        self.net = ResNet(ResidualBlock, 5)
         self.loss_fn = torch.nn.MSELoss()
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
         #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
@@ -26,7 +24,7 @@ class RegAgent:
         self.recall_chance = 1
         self.recall_min =   self.recall_size*self.recall_chance
 
-        self.memory = deque(maxlen=self.LSTM_size)
+        self.memory = [] # deque(maxlen=self.LSTM_size)
 
         self.use_cuda = False
         self.save_every = 10
@@ -39,11 +37,12 @@ class RegAgent:
         if checkpoint:
             self.load(checkpoint)
 
-
+        #self.net.eval()
 
     @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):
         """Given a state, choose an epsilon-greedy action"""
+        self.net.eval()
         perm_act = False
 
         if perm_act:
@@ -87,7 +86,7 @@ class RegAgent:
 
             for each in unique_permutations:
                 self.memory.append((YukonBoard(each, deck=board.deck, card=board.card, turn=True, terminal=False), score))
-                self.num_cached += 1
+
         else:
             self.memory.append((board, score))
 
@@ -101,9 +100,10 @@ class RegAgent:
 
 
     def learn(self):
+        self.net.train(True)
         sum_loss = 0
-        experiences, num_experiences = self.recall()
-        for input, label in experiences:
+        rn.shuffle(self.memory)
+        for input, label in self.memory:
             self.optimizer.zero_grad()
             output = self.net.forward(input.tensorize())
             label = torch.tensor([label])
@@ -113,6 +113,9 @@ class RegAgent:
             sum_loss += loss.item()
 
         print(f"Number of cached experiences: {len(self.memory)}")
+        num_experiences = len(self.memory)
+        num_delete = int(num_experiences*0.2)
+        self.memory = self.memory[:num_delete]
         return sum_loss/num_experiences
 
     def redis_learn(self, data):

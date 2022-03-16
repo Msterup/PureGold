@@ -126,8 +126,7 @@ class MCTS:
                     if rn.random() > self.agent.nik_rate:
                         node = self.net_select(node.find_children(), node)
                     else:
-                        nik_play = self.huristic(node)
-                        node = node.make_move(nik_play)
+                        node = self.huristic(node)
             else:
                 node = node.find_random_child()
 

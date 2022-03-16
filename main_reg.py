@@ -20,7 +20,10 @@ from pathlib import Path
 import datetime
 
 from time import sleep
+import redis
 
+
+r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
 
 is_CUDA_available = torch.cuda.is_available()
 print(f"Checking CUDA avaliability.. {is_CUDA_available}")
@@ -94,8 +97,10 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = Path('checkpoints/2021-12-18T19-03-58/mario_net_9.chkpt')
+checkpoint = Path('checkpoints/2022-03-10T20-18-12/mario_net_10.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
+
+r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 
 
@@ -151,7 +156,7 @@ def get_move(board, future_board):
 
 now = datetime.datetime.now()
 
-do_100_of_each = True
+do_100_of_each = False
 
 print(f"Do 100 of each option before starting proper MCTS? {do_100_of_each}")
 
@@ -199,7 +204,6 @@ for e in range(5000):
     while True:
         if tree == None:
             tree = MCTS(reg_agent)
-        reg_agent.nik_rate = 0
 
         c += 1
         past = now
@@ -210,21 +214,16 @@ for e in range(5000):
         print("----------------------")
         print(f"Current time {now} Delta_t {dt}")
         board.show(c, e)
+        winner = None
+
         if use_precompute:
-            if board in precompute_cache:
-                if precompute_cache_uses[board] >= 10:
-                    del precompute_cache[board]
-                    precompute_cache_uses[board] = 0
-
-
-            if board in precompute_cache:
-
-                winner = precompute_cache[board]
-                precompute_cache_uses[board] += 1
-
-
+            board_flat = board.flatten()
+            if r.exists(str(board_flat)):
+                winner = int(r.get(board_flat))
                 precomputed_cards += 1
-                print(f"This board was already computed - winner is {winner}")
+
+        if winner is not None:
+            print(f"This board was already computed - winner is {winner}")
 
         else:
             s = 0
@@ -239,7 +238,7 @@ for e in range(5000):
 
             else:
                 # Enable or disable hur_solve
-                while s < 100 and hur_solved == False:
+                while False:
                         s += 1
                         sim_wins.append(simulate(board))
                         if all(sim_wins) == True and s == 99:
@@ -265,7 +264,7 @@ for e in range(5000):
                     for _ in range(searches_def):
                         tree.do_rollout(board)
 
-                        if _ % 45 == 0:
+                        if _ % 15 == 0:
                             score, winner = tree.choose(board)
                             test_list.append(max(score))
                             n0 = len(test_list)
@@ -408,7 +407,7 @@ for e in range(5000):
             board.show(c, e)
 
             learn = True
-            if len(reg_agent.memory) >= reg_agent.recall_min and learn:
+            if learn:
                 loss_sum = reg_agent.learn()
             else:
                 loss_sum = 0
@@ -446,10 +445,11 @@ for e in range(5000):
                 writer.add_scalar("Precomputed cards", torch.FloatTensor([precomputed_cards]), e)
                 writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
                 writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
+                writer.add_scalar("Num experiences", torch.FloatTensor([len(reg_agent.memory)]), e)
 
                 writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
-            if pred_mean > 0.70:
-                reg_agent.nik_rate = reg_agent.nik_rate * 0.9995  # Hyper parameter
+            if pred_mean > 0.50:
+                reg_agent.nik_rate = reg_agent.nik_rate -0.01  # Hyper parameter
 
             if e % reg_agent.save_every == 0:
                 reg_agent.save(e)

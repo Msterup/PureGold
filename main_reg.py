@@ -1,8 +1,7 @@
 from monte_carlo_tree_search import MCTS
 from game import YukonBoard
 from reg_agent import RegAgent
-from hur_cy import nikolai
-import sys, time, msvcrt
+
 
 
 from collections import deque

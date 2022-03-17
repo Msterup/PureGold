@@ -36,6 +36,7 @@ class RegAgent:
 
         if checkpoint:
             self.load(checkpoint)
+            del checkpoint
 
         #self.net.eval()
 

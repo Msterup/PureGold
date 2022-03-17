@@ -44,7 +44,7 @@ if piles == 5:
 if piles == 6:
     dbindex = 0
 
-logging = True
+logging = False
 if logging:
     from torch.utils.tensorboard import SummaryWriter
 
@@ -155,7 +155,7 @@ def gameloop():
         else:
             print("is_run was set to 1, running script")
 
-        reg_agent.net.load_state_dict(pickle.loads(r.get('model')))
+        reg_agent =pickle.loads(r.get('model'))
         now = datetime.datetime.now()
 
         win_list = []

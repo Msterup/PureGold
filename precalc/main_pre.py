@@ -95,8 +95,8 @@ else:
 
 savedir = 123
 
-r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
-#r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
+#r = redis.Redis(host='10.250.13.234', port=6379, db=0, password='MikkelSterup')
+r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 #r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 reg_agent = pickle.loads(r.get('model'))
@@ -438,11 +438,8 @@ def gameloop():
 
 
 if __name__ == '__main__':
-
-    #gameloop()
-
+    num_workers = mp.cpu_count()
     num_workers = int(math.ceil(num_workers/4))
-    #num_workers = 1
     for i in range(num_workers):
         p = mp.Process(target=gameloop)
         p.start()

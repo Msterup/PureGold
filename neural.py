@@ -34,7 +34,7 @@ class ResidualBlock(nn.Module):
         out = self.fc3(out)
 
         out = self.relu(out)
-        out += residual
+        out = out + residual
         out = self.relu(out)
 
         return out

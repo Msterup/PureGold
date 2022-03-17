@@ -150,7 +150,7 @@ def gameloop():
         else:
             print("is_run was set to 1, running script")
 
-        reg_agent.net.state_dict() = pickle.loads(r.get('model'))
+        reg_agent.net.load_state_dict(pickle.loads(r.get('model')))
         now = datetime.datetime.now()
 
         win_list = []
@@ -439,6 +439,7 @@ def gameloop():
 
 if __name__ == '__main__':
     num_workers = mp.cpu_count()
+    print(f"Number of workers {num_workers}")
     num_workers = int(math.ceil(num_workers/4))
     for i in range(num_workers):
         p = mp.Process(target=gameloop)

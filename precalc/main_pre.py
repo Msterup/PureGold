@@ -150,7 +150,7 @@ def gameloop():
         else:
             print("is_run was set to 1, running script")
 
-        reg_agent = pickle.loads(r.get('model'))
+        reg_agent.net.state_dict() = pickle.loads(r.get('model'))
         now = datetime.datetime.now()
 
         win_list = []

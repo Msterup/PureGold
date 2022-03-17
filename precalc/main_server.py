@@ -136,7 +136,7 @@ last_log_e = 0
 last_save_e = 0
 loss = 0
 reg_agent.nik_rate = 0
-r.set('model', pickle.dumps(reg_agent))
+r.set('model', pickle.dumps(reg_agent.net.state_dict()))
 boards_to_train = []
 while train:
     actual_redis_cache_size = r.llen('train_boards')

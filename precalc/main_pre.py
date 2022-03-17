@@ -100,6 +100,8 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 #r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 
+save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+save_dir.mkdir(parents=True)
 checkpoint = None #Path('checkpoints/2022-03-10T20-18-12/mario_net_10.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 first_board = new_YukonBoard()

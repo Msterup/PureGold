@@ -42,14 +42,15 @@ class RegAgent:
 
         self.nik_rate = 1.15
 
+
         if checkpoint:
             self.load(checkpoint)
             del checkpoint
 
         #self.net.eval()
         # Acquires the default Cloud TPU core and moves the model to it
-        device = xm.xla_device()
-        self.net = self.net.to(device)
+        self.device = xm.xla_device()
+        self.net = self.net.to(self.device)
 
     @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):
@@ -121,7 +122,8 @@ class RegAgent:
             label = torch.tensor([label])
             loss = self.loss_fn(output, label)
             loss.backward()
-            self.optimizer.step()
+            xm.optimizer_step(optimizer)
+            xm.mark_step()
             sum_loss += loss.item()
 
         print(f"Number of cached experiences: {len(self.memory)}")

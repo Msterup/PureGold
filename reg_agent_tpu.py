@@ -44,7 +44,7 @@ class RegAgent:
 
         self.num_cached = 0
 
-        self.nik_rate = 0.7
+        self.nik_rate = 1.10
 
 
 

@@ -13,7 +13,6 @@ import torch_xla.core.xla_model as xm
 
 
 # Creates AlexNet for 10 classes
-net = torchvision.models.alexnet(num_classes=10)
 
 
 
@@ -21,7 +20,7 @@ net = torchvision.models.alexnet(num_classes=10)
 class RegAgent:
     def __init__(self, save_dir, checkpoint=None):
         self.save_dir = save_dir
-        self.net = ResNet(ResidualBlock, 5)
+
         self.loss_fn = torch.nn.MSELoss()
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
         #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
@@ -50,7 +49,7 @@ class RegAgent:
         #self.net.eval()
         # Acquires the default Cloud TPU core and moves the model to it
         self.device = xm.xla_device()
-        self.net = self.net.to(self.device)
+        self.net = ResNet(ResidualBlock, 5).to(self.device)
 
     @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):

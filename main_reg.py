@@ -404,9 +404,8 @@ for e in range(5000):
 
             learn = True
             if learn:
-                for N, key in tqdm(enumerate(tree.N)):
-                    if N >= 100:
-                        reg_agent.memory.append((key.tensorize(), torch.tensor([tree.Q[key]/tree.N[key]])))
+                reg_agent.cache(tree)
+
 
 
 

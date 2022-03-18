@@ -14,7 +14,12 @@ from tqdm import tqdm
 class RegAgent:
     def __init__(self, save_dir, checkpoint=None):
         self.save_dir = save_dir
-        self.net = ResNet(ResidualBlock, 5)
+        self.use_cuda = torch.cuda.is_available()
+        if self.use_cuda:
+            self.cuda = torch.device('cuda')
+            self.net = ResNet(ResidualBlock, 5).to(self.cuda)
+        else:
+            self.net = ResNet(ResidualBlock, 5)
         self.loss_fn = torch.nn.MSELoss()
         self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
         #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
@@ -22,7 +27,9 @@ class RegAgent:
 
         self.memory = []
 
-        self.use_cuda = True
+
+
+
         self.save_every = 10
         self.prediction_rate = 0
 
@@ -69,23 +76,15 @@ class RegAgent:
             return self.net.forward(board.tensorize()).item()
 
 
-    def cache(self, board, score):
-        permute = False
-
-        if permute:
-            """Add the experience to memory"""
-            """Experience: Board, score"""
-            permutations = itertools.permutations(board.piles)
-            unique_permutations = []
-            for each in permutations:
-                unique_permutations.append(each)
-            unique_permutations = set(unique_permutations)
-
-            for each in unique_permutations:
-                self.memory.append((YukonBoard(each, deck=board.deck, card=board.card, turn=True, terminal=False), score))
-
+    def cache(self, tree):
+        if self.use_cuda:
+            for N, key in tqdm(enumerate(tree.N)):
+                if N >= 100:
+                    self.memory.append((key.tensorize().cuda(), torch.tensor([tree.Q[key] / tree.N[key]]).cuda()))
         else:
-            self.memory.append((board, score))
+            for N, key in tqdm(enumerate(tree.N)):
+                if N >= 100:
+                    self.memory.append((key.tensorize(), torch.tensor([tree.Q[key] / tree.N[key]])))
 
         return
 

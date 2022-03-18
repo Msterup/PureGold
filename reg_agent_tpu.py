@@ -45,8 +45,7 @@ class RegAgent:
 
         self.num_cached = 0
 
-        self.nik_rate = 1.10
-
+        self.nik_rate = 0
 
 
     @lru_cache(maxsize=1000*3)

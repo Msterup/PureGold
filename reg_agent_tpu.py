@@ -115,10 +115,10 @@ class RegAgent:
         for input, label in self.memory:
             self.optimizer.zero_grad()
             output = self.net.forward(input.tensorize().to(self.device))
-            label = torch.tensor([label])
+            label = torch.tensor([label]).to(self.device)
             loss = self.loss_fn(output, label)
             loss.backward()
-            xm.optimizer_step(optimizer)
+            xm.optimizer_step(self.optimizer)
             xm.mark_step()
             sum_loss += loss.item()
 
@@ -132,8 +132,8 @@ class RegAgent:
         sum_loss = 0
         for input, label in data:
             self.optimizer.zero_grad()
-            output = self.net.forward(input.tensorize())
-            label = torch.tensor([label])
+            output = self.net.forward(input.tensorize().to(self.device))
+            label = torch.tensor([label]).to(self.device)
             loss = self.loss_fn(output, label)
             loss.backward()
             self.optimizer.step()

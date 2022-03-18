@@ -70,7 +70,7 @@ class RegAgent:
             if len(act_list) > 2:
                 act_list = rn.sample(act_list, 2)
             for each in act_list:
-                output = self.net.forward(each.tensorize())
+                output = self.net.forward(each.tensorize().to(self.device))
                 act_total += output.item()
 
             act_mean = act_total/len(act_list)
@@ -78,7 +78,7 @@ class RegAgent:
             return act_mean
 
         else:
-            return self.net.forward(board.tensorize()).item()
+            return self.net.forward(board.tensorize().to(self.device)).item()
 
 
     def cache(self, board, score):
@@ -114,7 +114,7 @@ class RegAgent:
         rn.shuffle(self.memory)
         for input, label in self.memory:
             self.optimizer.zero_grad()
-            output = self.net.forward(input.tensorize())
+            output = self.net.forward(input.tensorize().to(self.device))
             label = torch.tensor([label])
             loss = self.loss_fn(output, label)
             loss.backward()

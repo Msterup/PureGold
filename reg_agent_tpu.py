@@ -12,10 +12,6 @@ import torch_xla
 import torch_xla.core.xla_model as xm
 
 
-# Creates AlexNet for 10 classes
-
-
-
 
 class RegAgent:
     def __init__(self, save_dir, checkpoint=None):

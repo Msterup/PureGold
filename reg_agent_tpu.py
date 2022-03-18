@@ -167,7 +167,7 @@ class RegAgent:
         state_dict = xser.load("/content/PureGold/checkpoints/2022-03-17T02-40-51/mario_net_2.chkpt")
 
         print(f"Loading model at {load_path}")
-        self.net.load_state_dict(state_dict)
+        self.net.load_state_dict(state_dict['model'])
         self.nik_rate = 0 #ckp.get('nik_rate')
 
 

@@ -17,6 +17,8 @@ import math
 import numpy as np
 from pathlib import Path
 import datetime
+from tqdm import tqdm
+from copy import deepcopy
 
 from time import sleep
 import redis
@@ -96,7 +98,7 @@ savedir = 123
 ### Agent
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
-checkpoint = None # Path('checkpoints/2022-03-17T02-40-51/mario_net_2.chkpt')
+checkpoint = None #Path('checkpoints/2022-03-17T02-40-51/mario_net_2.chkpt')
 reg_agent = RegAgent(save_dir, checkpoint=checkpoint)
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
@@ -155,7 +157,7 @@ def get_move(board, future_board):
 
 now = datetime.datetime.now()
 
-do_100_of_each = False
+do_100_of_each = True
 
 print(f"Do 100 of each option before starting proper MCTS? {do_100_of_each}")
 
@@ -166,6 +168,7 @@ input("Press Enter to continue...")
 
 
 for e in range(5000):
+    print(f"Hur rate is: {reg_agent.nik_rate}")
 
 
     time_list = 53 * [0]
@@ -232,7 +235,6 @@ for e in range(5000):
                 winner = fq
                 print("Find quick option selected")
                 one_option_cards += 1
-                tree = None
                 score = [1001]
 
             else:
@@ -308,7 +310,7 @@ for e in range(5000):
                     for each in range(1,piles+1):
                         future_board = board.make_move(each-1)
                         future_score = score[each]
-                        reg_agent.cache(future_board, future_score)
+
                         prediction = reg_agent.act(future_board)
                         predictions.append(prediction)
                         reg_agent.num_cached += 1
@@ -384,11 +386,6 @@ for e in range(5000):
         if external_board == True:
             player.get_real_action(winner, board, drawn_card)
 
-        if use_precompute and c < 15:
-            precompute_cache[board] = winner
-            if board not in precompute_cache_uses:
-                precompute_cache_uses[board] = 0
-
 
         board = board.make_move(winner)
 
@@ -407,6 +404,12 @@ for e in range(5000):
 
             learn = True
             if learn:
+                for N, key in tqdm(enumerate(tree.N)):
+                    if N >= 100:
+                        reg_agent.memory.append((key.tensorize(), torch.tensor([tree.Q[key]/tree.N[key]])))
+
+
+
                 loss_sum = reg_agent.learn()
             else:
                 loss_sum = 0

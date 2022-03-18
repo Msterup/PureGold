@@ -8,7 +8,8 @@ from collections import deque
 import random as rn
 import itertools
 from functools import lru_cache
-
+import math
+from tqdm import tqdm
 
 class RegAgent:
     def __init__(self, save_dir, checkpoint=None):
@@ -19,12 +20,7 @@ class RegAgent:
         #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
         #self.optimizer = optim.SGD(self.net.parameters(), lr=0.00001, momentum=0.9)
 
-        self.LSTM_size =     12000
-        self.recall_size =   100
-        self.recall_chance = 1
-        self.recall_min =   self.recall_size*self.recall_chance
-
-        self.memory = [] # deque(maxlen=self.LSTM_size)
+        self.memory = []
 
         self.use_cuda = True
         self.save_every = 10
@@ -95,29 +91,38 @@ class RegAgent:
 
     def recall(self):
         """Sample experiences from memory"""
-        num_cached = self.num_cached
-        self.num_cached = 0
-        return rn.sample(self.memory, num_cached), num_cached
+        if len(self.memory) < 32:
+            return None
+        rn.shuffle(self.memory)
+        minibatch = []
+        for _ in range(32):
+            minibatch.append(self.memory.pop())
+        return minibatch
 
 
     def learn(self):
+        its = math.floor(len(self.memory)/32)
+        print(f"Learning... ")
         self.net.train(True)
+        minibatch = self.recall()
+        num_trained = 0
         sum_loss = 0
-        rn.shuffle(self.memory)
-        for input, label in self.memory:
-            self.optimizer.zero_grad()
-            output = self.net.forward(input.tensorize())
-            label = torch.tensor([label])
-            loss = self.loss_fn(output, label)
-            loss.backward()
-            self.optimizer.step()
-            sum_loss += loss.item()
+        with tqdm(total=its) as pbar:
+            while minibatch is not None:
+                input, label = map(torch.stack, zip(*minibatch))
+                self.optimizer.zero_grad()
+                output = self.net.forward(input)
+                loss = self.loss_fn(output, label)
+                loss.backward()
+                self.optimizer.step()
+                sum_loss += loss.item()
+                num_trained += 32
+                minibatch = self.recall()
+                pbar.update(1)
 
-        print(f"Number of cached experiences: {len(self.memory)}")
-        num_experiences = len(self.memory)
-        num_delete = int(num_experiences*0.2)
-        self.memory = self.memory[:num_delete]
-        return sum_loss/num_experiences
+        print(f"Number of trained experiences: {num_trained}")
+
+        return sum_loss/num_trained
 
     def redis_learn(self, data):
         sum_loss = 0

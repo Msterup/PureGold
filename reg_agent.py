@@ -73,7 +73,11 @@ class RegAgent:
             return act_mean
 
         else:
-            return self.net.forward(board.tensorize()).item()
+            if self.use_cuda:
+
+                return self.net.forward(board.tensorize().cuda()).item()
+            else:
+                return self.net.forward(board.tensorize()).item()
 
 
     def cache(self, tree):

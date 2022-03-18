@@ -161,7 +161,7 @@ class RegAgent:
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
 
-        ckp = torch.load(load_path, map_location=('cuda' if self.use_cuda else 'cpu'))
+        ckp = torch.load(load_path, map_location=(self.device))
         state_dict = ckp.get('model')
 
         print(f"Loading model at {load_path}")

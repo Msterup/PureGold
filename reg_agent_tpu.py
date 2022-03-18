@@ -162,8 +162,8 @@ class RegAgent:
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
 
-        ckp = torch.load(load_path)
-        state_dict = ckp.get('model')
+        #ckp = torch.load(load_path)
+        state_dict = xser.load(load_path)
 
         print(f"Loading model at {load_path}")
         self.net.load_state_dict(state_dict)

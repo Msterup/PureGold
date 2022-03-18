@@ -167,7 +167,7 @@ class RegAgent:
 
         print(f"Loading model at {load_path}")
         self.net.load_state_dict(state_dict)
-        self.nik_rate = ckp.get('nik_rate')
+        self.nik_rate = 0 #ckp.get('nik_rate')
 
 
 

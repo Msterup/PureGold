@@ -26,7 +26,7 @@ class RegAgent:
 
         self.memory = [] # deque(maxlen=self.LSTM_size)
 
-        self.use_cuda = False
+        self.use_cuda = True
         self.save_every = 10
         self.prediction_rate = 0
 

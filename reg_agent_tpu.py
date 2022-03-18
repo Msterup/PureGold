@@ -164,7 +164,7 @@ class RegAgent:
             raise ValueError(f"{load_path} does not exist")
 
         #ckp = torch.load(load_path)
-        state_dict = xser.load("/content/PureGold/checkpoints/2022-03-17T02-40-51/mario_net_2.chkpt")
+        state_dict = xser.load("/content/PureGold/checkpoints/2022-03-17T02-40-51/mario_net_1.chkpt")
 
         print(f"Loading model at {load_path}")
         self.net.load_state_dict(state_dict['model'])

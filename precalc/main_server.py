@@ -129,7 +129,7 @@ while True:
         if e % 5 == 0:
             cpu_agent = deepcopy(reg_agent)
             cpu_agent.net.to(device=torch.device("cpu"))
-            r.set('cpu_agent', pickle.dumps(cpu_agent)
+            r.set('cpu_agent', pickle.dumps(cpu_agent))
             print("Net has been sent to redis!")
 
 

@@ -119,7 +119,7 @@ while True:
             writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
             writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
             writer.add_scalar("Num experiences", torch.FloatTensor([trained_its]), e)
-            writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), cardsum)
+            writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), card_sum)
 
             if pred_mean > 0.75:
                 reg_agent.nik_rate = reg_agent.nik_rate - 0.001  # Hyper parameter

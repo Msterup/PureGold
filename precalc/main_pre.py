@@ -279,7 +279,7 @@ while True:
 
             learn = True
             if learn:
-                to_redis = [tree, c, huristic_cards, one_option_cards, precomputed_cards, prediction_list_moving]
+                to_redis = pickle.dumps([tree, c, huristic_cards, one_option_cards, precomputed_cards, prediction_list_moving])
                 r.rpush('datalist', to_redis)
             else:
                 loss_sum = 0

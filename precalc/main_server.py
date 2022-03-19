@@ -62,6 +62,8 @@ print("")
 print("Please make sure all settings are correct")
 input("Press Enter to continue...")
 
+
+
 win_list = []
 card_list = []
 card_list_moving = deque(maxlen=30)

@@ -95,8 +95,7 @@ def gameloop():
     while True:
         e += 1
         state_dict = r.get('state_dict')
-        reg_agent = torch.load(io.BytesIO(agent_obj), map_location=torch.device('cpu'))
-        reg_agent.to_cuda()
+        reg_agent = torch.load(state_dict, map_location=torch.device('cpu'))
         print(f"Hur rate is: {reg_agent.nik_rate}")
 
         time_list = 53 * [0]

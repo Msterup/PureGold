@@ -96,6 +96,9 @@ class RegAgent:
         sum_loss = 0
         with tqdm(total=its) as pbar:
             while minibatch is not None:
+                print(input.is_cuda())
+                print(label.is_cuda())
+
                 input, label = map(torch.stack, zip(*minibatch))
                 self.optimizer.zero_grad()
                 output = self.net.forward(input)

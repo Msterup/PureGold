@@ -103,8 +103,7 @@ class RegAgent:
             while minibatch is not None:
                 for i1, i2 in minibatch:
                     print(f"i1 {i1.is_cuda}, i2 {i2.is_cuda}")
-                    if not i1.is_cuda:
-                        print(i1, i2)
+                    print(i1, i2)
                 input, label = map(torch.stack, zip(*minibatch))
                 self.optimizer.zero_grad()
 

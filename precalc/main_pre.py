@@ -54,6 +54,7 @@ def simulate(sim_board):
 
 
 def get_move(board, future_board):
+    piles = 4
     winner = None
     for i in range(piles):
         if board.make_move(i) == future_board:

@@ -51,7 +51,7 @@ r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 ### Agent
 load_from_redis = True
 if load_from_redis:
-    reg_agent = r.get('agent')
+    reg_agent = pickle.loads(r.get('agent'))
 else:
     reg_agent = RegAgent()
     r.set('agent', pickle.dumps(reg_agent))
@@ -114,6 +114,7 @@ while True:
             writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
             writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
             writer.add_scalar("Num experiences", torch.FloatTensor([trained_its]), e)
+            writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), e)
 
             if pred_mean > 0.50:
                 reg_agent.nik_rate = reg_agent.nik_rate - 0.01  # Hyper parameter

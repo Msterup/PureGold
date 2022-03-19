@@ -75,6 +75,7 @@ prediction_list = [] = deque(maxlen=1000)
 trained_its = 0
 
 e = 0
+card_sum = 0
 while True:
     num_items_in_list = r.llen('datalist')
     if num_items_in_list == 0:
@@ -104,6 +105,8 @@ while True:
         mean_w = st.mean(win_list_moving)
         mean_w_total = st.mean(win_list)
 
+        card_sum += card
+
         if logging:
             writer.add_scalar("Card", torch.FloatTensor([card]), e)
             writer.add_scalar("Mean/30", torch.FloatTensor([mean_c]), e)
@@ -115,7 +118,7 @@ while True:
             writer.add_scalar("One option cards", torch.FloatTensor([one_option_cards]), e)
             writer.add_scalar("Loss sum", torch.FloatTensor([loss_sum]), e)
             writer.add_scalar("Num experiences", torch.FloatTensor([trained_its]), e)
-            writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), trained_its)
+            writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), cardsum)
 
             if pred_mean > 0.75:
                 reg_agent.nik_rate = reg_agent.nik_rate - 0.001  # Hyper parameter

@@ -93,7 +93,7 @@ class RegAgent:
         its = math.floor(len(self.memory)/32)
         print(f"Learning... ")
         self.net.train(True)
-        print(f"is net cuda={self.parameters().is_cuda}")
+        print(f"is net cuda={next(net.parameters()).is_cuda}")
         minibatch = self.recall()
         num_trained = 0
         sum_loss = 0

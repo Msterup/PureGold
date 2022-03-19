@@ -130,7 +130,7 @@ while True:
             r.set('agent', pickle.dumps(reg_agent))
             buffer = io.BytesIO()
             torch.save(reg_agent.net.state_dict(), buffer)
-            r.set('state_dict', pickle.dumps(buffer))
+            r.set('state_dict', buffer)
             print("Net has been sent to redis!")
 
 

@@ -94,7 +94,7 @@ def gameloop():
     external_board = False
     while True:
         e += 1
-        reg_agent = r.get('cpu_agent')
+        reg_agent = (r.get('cpu_agent'))
         print(f"Hur rate is: {reg_agent.nik_rate}")
 
         time_list = 53 * [0]

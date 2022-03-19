@@ -127,8 +127,9 @@ while True:
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:
-            cpu_agent = deepcopy(reg_agent)
-            cpu_agent.net.to(device=torch.device("cpu"))
+            torch.save(reg_agent.net.state_dict(), "temp_model")
+            cpu_agent = RegAgent()
+            cpu_agent.net.load_state_dict(torch.load(temp_model, map_location=torch.device('cpu')))
             r.set('cpu_agent', pickle.dumps(cpu_agent))
             print("Net has been sent to redis!")
 

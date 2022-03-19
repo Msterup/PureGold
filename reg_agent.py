@@ -71,7 +71,10 @@ class RegAgent:
         if self.use_cuda:
             for N, key in tqdm(enumerate(tree.N)):
                 if N >= 100 and (not key.turn):
-                    self.memory.append([key.tensorize().to(self.cuda), torch.tensor([tree.Q[key] / N]).to(self.cuda)])
+                    input = key.tensorize().to(self.cuda)
+                    label = torch.tensor([tree.Q[key] / N]).to(self.cuda)
+                    if input.is_cuda:
+                        self.memory.append((input, label))
         else:
             for N, key in tqdm(enumerate(tree.N)):
                 if N >= 100 and (not key.turn):

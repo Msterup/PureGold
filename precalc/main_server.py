@@ -5,6 +5,7 @@ import time
 import pickle
 import torch
 import redis
+from copy import deepcopy
 
 import sys
 import os
@@ -125,6 +126,8 @@ while True:
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:
+            cpu_agent = deepcopy(reg_agent)
+            cpu_agent.net.to(device=torch.device("cpu"))
             r.set('agent', pickle.dumps(reg_agent))
 
 

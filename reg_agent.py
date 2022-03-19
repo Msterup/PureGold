@@ -101,7 +101,7 @@ class RegAgent:
         sum_loss = 0
         with tqdm(total=its) as pbar:
             while minibatch is not None:
-                for i1, i2 in minibatch[1]:
+                for i1, i2 in minibatch:
                     print(f"i1 {i1.is_cuda}, i2 {i2.is_cuda}")
                 input, label = map(torch.stack, zip(*minibatch))
                 self.optimizer.zero_grad()

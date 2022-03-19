@@ -24,7 +24,7 @@ class RegAgent:
         self.use_cuda = torch.cuda.is_available()
         if self.use_cuda:
             self.cuda = torch.device('cuda')
-            self.net = ResNet(ResidualBlock, 5).to(self.cuda)
+            self.net.to(self.cuda)
         else:
             print("Cant use cuda on this one buddy")
 

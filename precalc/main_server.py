@@ -60,7 +60,6 @@ reg_agent.to_cuda()
 
 print("")
 print("Please make sure all settings are correct")
-input("Press Enter to continue...")
 
 
 

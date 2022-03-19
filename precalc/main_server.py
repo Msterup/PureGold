@@ -49,7 +49,7 @@ else:
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
-load_from_redis = False
+load_from_redis = True
 if load_from_redis:
     reg_agent = r.get('agent')
 else:

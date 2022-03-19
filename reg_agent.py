@@ -25,8 +25,7 @@ class RegAgent:
         if self.use_cuda:
             self.cuda = torch.device('cuda')
             self.net.to(self.cuda)
-            self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08,
-                                               weight_decay=0.0005, amsgrad=False)
+            self.optimizer.to(self.cuda)
         else:
             print("Cant use cuda on this one buddy")
 
@@ -93,7 +92,8 @@ class RegAgent:
         its = math.floor(len(self.memory)/32)
         print(f"Learning... ")
         self.net.train(True)
-        print(f"is net cuda={next(self.net.parameters()).is_cuda}")
+
+
         minibatch = self.recall()
         num_trained = 0
         sum_loss = 0
@@ -101,6 +101,7 @@ class RegAgent:
             while minibatch is not None:
                 input, label = map(torch.stack, zip(*minibatch))
                 self.optimizer.zero_grad()
+
                 output = self.net.forward(input)
                 loss = self.loss_fn(output, label)
                 loss.backward()

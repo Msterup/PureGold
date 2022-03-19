@@ -12,36 +12,21 @@ import math
 from tqdm import tqdm
 
 class RegAgent:
-    def __init__(self, save_dir, checkpoint=None):
-        self.save_dir = save_dir
+    def __init__(self):
+        self.net = ResNet(ResidualBlock, 5)
+        self.loss_fn = torch.nn.MSELoss()
+        self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
+        self.memory = []
+        self.save_every = 10
+        self.nik_rate = 1.15
+
+    def to_cuda(self):
         self.use_cuda = torch.cuda.is_available()
         if self.use_cuda:
             self.cuda = torch.device('cuda')
             self.net = ResNet(ResidualBlock, 5).to(self.cuda)
         else:
-            self.net = ResNet(ResidualBlock, 5)
-        self.loss_fn = torch.nn.MSELoss()
-        self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08, weight_decay=0.0005, amsgrad=False)
-        #self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00225)
-        #self.optimizer = optim.SGD(self.net.parameters(), lr=0.00001, momentum=0.9)
-
-        self.memory = []
-
-
-
-
-        self.save_every = 10
-        self.prediction_rate = 0
-
-        self.num_cached = 0
-
-        self.nik_rate = 1.15
-
-        if checkpoint:
-            self.load(checkpoint)
-            del checkpoint
-
-        #self.net.eval()
+            print("Cant use cuda on this one buddy")
 
     @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):
@@ -74,7 +59,6 @@ class RegAgent:
 
         else:
             if self.use_cuda:
-
                 return self.net.forward(board.tensorize().cuda()).item()
             else:
                 return self.net.forward(board.tensorize()).item()
@@ -125,7 +109,7 @@ class RegAgent:
 
         print(f"Number of trained experiences: {num_trained}")
 
-        return sum_loss/num_trained
+        return sum_loss/num_trained, its*32
 
     def redis_learn(self, data):
         sum_loss = 0
@@ -142,20 +126,6 @@ class RegAgent:
         return sum_loss
 
 
-
-    def save(self, e):
-        """Saves the nural net in a  """
-        save_path = self.save_dir / f"mario_net_{int(e // self.save_every)}.chkpt"
-        torch.save(
-            dict(
-                model=self.net.state_dict(),
-                nik_rate = self.nik_rate
-            ),
-            save_path
-        )
-        print(f"NeuralNet saved to {save_path} at step {e}")
-
-        pass
 
     def load(self, load_path):
         if not load_path.exists():

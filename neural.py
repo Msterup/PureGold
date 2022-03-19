@@ -7,12 +7,10 @@ class ResidualBlock(nn.Module):
         self.fc1 = nn.Linear(in_channels, out_channels)
 
         self.relu = nn.ReLU()
-        self.dr1 = nn.Dropout(p=0.1)
 
         self.fc2 = nn.Linear(in_channels, out_channels)
 
         self.relu = nn.ReLU()
-        self.dr2 = nn.Dropout(p=0.1)
 
         self.fc3 = nn.Linear(in_channels, out_channels)
         self.relu = nn.ReLU()
@@ -23,12 +21,10 @@ class ResidualBlock(nn.Module):
         out = self.fc1(x)
 
         out = self.relu(out)
-        out = self.dr1(out)
 
         out = self.fc2(out)
 
         out = self.relu(out)
-        out = self.dr2(out)
 
         out = self.relu(out)
         out = self.fc3(out)

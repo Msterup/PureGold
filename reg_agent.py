@@ -69,12 +69,9 @@ class RegAgent:
 
     def cache(self, tree):
         if self.use_cuda:
-            for N, key in enumerate(tree.N):
+            for N, key in tqdm(enumerate(tree.N)):
                 if N >= 100 and (not key.turn):
-                    input = key.tensorize().to(self.cuda)
-                    label = torch.tensor([tree.Q[key]+1 / N]).to(self.cuda)
-                    if input.is_cuda:
-                        self.memory.append((input, label))
+                    self.memory.append([key.tensorize(), torch.tensor([tree.Q[key] / N])])
         else:
             for N, key in tqdm(enumerate(tree.N)):
                 if N >= 100 and (not key.turn):
@@ -104,8 +101,9 @@ class RegAgent:
         sum_loss = 0
         with tqdm(total=its) as pbar:
             while minibatch is not None:
-
                 input, label = map(torch.stack, zip(*minibatch))
+                input = input.to(self.cuda)
+                label = label.to(self.cuda)
                 self.optimizer.zero_grad()
 
                 output = self.net.forward(input)

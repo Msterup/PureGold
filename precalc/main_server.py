@@ -46,7 +46,7 @@ if logging:
 else:
     print("Warning! Not using logging!")
 
-r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
+r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
 load_from_redis = True
@@ -118,8 +118,8 @@ while True:
             writer.add_scalar("Num experiences", torch.FloatTensor([trained_its]), e)
             writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), e)
 
-            if pred_mean > 0.50:
-                reg_agent.nik_rate = reg_agent.nik_rate - 0.01  # Hyper parameter
+            if pred_mean > 0.75:
+                reg_agent.nik_rate = reg_agent.nik_rate - 0.001  # Hyper parameter
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:

@@ -25,6 +25,8 @@ class RegAgent:
         if self.use_cuda:
             self.cuda = torch.device('cuda')
             self.net.to(self.cuda)
+            self.optimizer = torch.optim.AdamW(self.net.parameters(), lr=0.0002, betas=(0.09, 0.0999), eps=1e-08,
+                                               weight_decay=0.0005, amsgrad=False)
         else:
             print("Cant use cuda on this one buddy")
 
@@ -97,8 +99,6 @@ class RegAgent:
         with tqdm(total=its) as pbar:
             while minibatch is not None:
                 input, label = map(torch.stack, zip(*minibatch))
-                print(input.is_cuda)
-                print(label.is_cuda)
                 self.optimizer.zero_grad()
                 output = self.net.forward(input)
                 loss = self.loss_fn(output, label)

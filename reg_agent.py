@@ -25,7 +25,7 @@ class RegAgent:
         if self.use_cuda:
             self.cuda = torch.device('cuda')
             self.net.to(self.cuda)
-            self.optimizer.to(self.cuda)
+            self.optimizer.param_groups.to(self.cuda)
         else:
             print("Cant use cuda on this one buddy")
 

@@ -9,6 +9,7 @@ from copy import deepcopy
 
 import sys
 import os
+import io
 # getting the name of the directory
 # where the this file is present.
 current = os.path.dirname(os.path.realpath(__file__))
@@ -127,6 +128,9 @@ while True:
 
         if e % 5 == 0:
             r.set('agent', pickle.dumps(reg_agent))
+            buffer = io.BytesIO()
+            torch.save(reg_agent.net.state_dict(), buffer)
+            r.set('state_dict', buffer)
             print("Net has been sent to redis!")
 
 

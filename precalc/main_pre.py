@@ -10,6 +10,7 @@ import torch
 import redis
 import sys
 import os
+import io
 from multiprocessing import Process
 # getting the name of the directory
 # where the this file is present.
@@ -93,7 +94,8 @@ def gameloop():
     external_board = False
     while True:
         e += 1
-        reg_agent = pickle.loads(r.get('agent'))
+        state_dict = r.get('state_dict')
+        reg_agent = torch.load(io.BytesIO(agent_obj), map_location=torch.device('cpu'))
         reg_agent.to_cuda()
         print(f"Hur rate is: {reg_agent.nik_rate}")
 
@@ -308,7 +310,7 @@ def gameloop():
 
                 board = board.make_move(0)  # draw a a card
 if __name__ == '__main__':
-
+    gameloop()
     processes = []
     for _ in range(2):
         p = Process(target=gameloop)

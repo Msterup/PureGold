@@ -129,6 +129,7 @@ while True:
         if e % 5 == 0:
             torch.save(reg_agent.net.state_dict(), "temp_model")
             cpu_agent = RegAgent()
+            cpu_agent.nik_rate = reg_agent.nik_rate
             cpu_agent.net.load_state_dict(torch.load("temp_model", map_location=torch.device('cpu')))
             r.set('cpu_agent', pickle.dumps(cpu_agent))
             print("Net has been sent to redis!")

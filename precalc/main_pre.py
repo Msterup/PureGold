@@ -94,7 +94,8 @@ def gameloop():
     external_board = False
     while True:
         e += 1
-        reg_agent = (r.get('cpu_agent'))
+        reg_agent = pickle.loads(r.get('cpu_agent'))
+        reg_agent.use_cuda = False
         print(f"Hur rate is: {reg_agent.nik_rate}")
 
         time_list = 53 * [0]
@@ -308,7 +309,7 @@ def gameloop():
 
                 board = board.make_move(0)  # draw a a card
 if __name__ == '__main__':
-    gameloop()
+    #gameloop()
     processes = []
     for _ in range(2):
         p = Process(target=gameloop)

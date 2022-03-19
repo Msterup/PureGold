@@ -73,7 +73,7 @@ class RegAgent:
                 if N >= 100 and (not key.turn):
                     if tree.Q[key] == 0:
                         Q = 1
-                        self.memory.append((key.tensorize().to(self.cuda), torch.tensor(Q / tree.N[key]]).to(self.cuda)))
+                        self.memory.append((key.tensorize().to(self.cuda), torch.tensor([Q / tree.N[key]]).to(self.cuda)))
                     else:
                         self.memory.append((key.tensorize().to(self.cuda), torch.tensor([tree.Q[key] / tree.N[key]]).to(self.cuda)))
         else:

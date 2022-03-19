@@ -132,6 +132,7 @@ while True:
             cpu_agent.nik_rate = reg_agent.nik_rate
             cpu_agent.net.load_state_dict(torch.load("temp_model", map_location=torch.device('cpu')))
             r.set('cpu_agent', pickle.dumps(cpu_agent))
+            r.set('gpu_agent', pickle.dumps(reg_agent))
             print("Net has been sent to redis!")
 
 

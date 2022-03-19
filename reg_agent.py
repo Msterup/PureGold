@@ -29,7 +29,8 @@ class RegAgent:
                                                weight_decay=0.0005, amsgrad=False)
 
         else:
-            print("Cant use cuda on this one buddy")
+            self.cuda = torch.device('cpu')
+            self.net.to(self.cuda)
 
     @lru_cache(maxsize=1000*3)
     def act(self, board, grad=True):

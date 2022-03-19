@@ -72,7 +72,7 @@ class RegAgent:
             for N, key in enumerate(tree.N):
                 if N >= 100 and (not key.turn):
                     input = key.tensorize().to(self.cuda)
-                    label = torch.tensor([tree.Q[key] / N]).to(self.cuda)
+                    label = torch.tensor([tree.Q[key]+1 / N]).to(self.cuda)
                     if input.is_cuda:
                         self.memory.append((input, label))
         else:

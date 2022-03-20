@@ -93,6 +93,7 @@ def gameloop():
     e = 0
     external_board = False
     while True:
+        data = []
         e += 1
         reg_agent = pickle.loads(r.get('cpu_agent'))
         reg_agent.use_cuda = False
@@ -224,6 +225,7 @@ def gameloop():
                             future_score = score[each]
 
                             prediction = reg_agent.act(future_board)
+                            data.append((future_board, future_score))
                             predictions.append(prediction)
 
                         pred_card = np.argmax(predictions)
@@ -287,7 +289,7 @@ def gameloop():
 
                 learn = True
                 if learn:
-                    to_redis = pickle.dumps([tree, c, huristic_cards, one_option_cards, precomputed_cards, prediction_list_moving])
+                    to_redis = pickle.dumps([data, c, huristic_cards, one_option_cards, precomputed_cards, prediction_list_moving])
                     r.rpush('datalist', to_redis)
                 else:
                     loss_sum = 0

@@ -85,8 +85,8 @@ while True:
         print(time.strftime("%Y-%m-%d %H:%M:%S"))
     else:
         e += 1
-        tree, card, huristic_cards, one_option_cards, precomputed_cards, prediction = pickle.loads(r.rpop('datalist'))
-        reg_agent.cache(tree)
+        data, card, huristic_cards, one_option_cards, precomputed_cards, prediction = pickle.loads(r.rpop('datalist'))
+        reg_agent.cache(data)
         loss_sum, its = reg_agent.learn()
         print(f"Got {its}")
         trained_its += its

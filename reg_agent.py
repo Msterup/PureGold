@@ -68,15 +68,10 @@ class RegAgent:
                 return self.net.forward(board.tensorize()).item()
 
 
-    def cache(self, tree):
+    def cache(self, data):
         if self.use_cuda:
-            for N, key in tqdm(enumerate(tree.N)):
-                if N >= 250 and (not key.turn):
-                    self.memory.append((key.tensorize(), torch.tensor([tree.Q[key] / tree.N[key]])))
-        else:
-            for N, key in tqdm(enumerate(tree.N)):
-                if N >= 100 and (not key.turn):
-                    self.memory.append((key.tensorize(), torch.tensor([tree.Q[key] / tree.N[key]])))
+            for board, score in enumerate(data):
+                self.memory.append((board.tensorize(), torch.tensor([score])))
 
         return
 
@@ -103,8 +98,9 @@ class RegAgent:
         with tqdm(total=its) as pbar:
             while minibatch is not None:
                 input, label = map(torch.stack, zip(*minibatch))
-                input = input.to(self.cuda)
-                label = label.to(self.cuda)
+                if self.use_cuda:
+                    input = input.to(self.cuda)
+                    label = label.to(self.cuda)
                 self.optimizer.zero_grad()
 
                 output = self.net.forward(input)

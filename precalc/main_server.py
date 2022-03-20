@@ -53,7 +53,7 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 ### Agent
 load_from_redis = True
 if load_from_redis:
-    reg_agent = pickle.loads(r.get('agent'))
+    reg_agent = pickle.loads(r.get('gpu_agent'))
 else:
     reg_agent = RegAgent()
     r.set('agent', pickle.dumps(reg_agent))

@@ -96,8 +96,8 @@ while True:
         trained_its += its
 
         for each in prediction:
-            precomputed_list.append(each)
-        pred_mean = st.mean(precomputed_list)
+            prediction_list.append(each)
+        pred_mean = st.mean(prediction_list)
 
         if card == 52:
             win_list_moving.append(1)

@@ -177,7 +177,7 @@ def gameloop():
                         for _ in range(searches_def):
                             tree.do_rollout(board)
 
-                            if _ % 20 == 0:
+                            if _ % 30 == 0:
                                 score, winner = tree.choose(board)
                                 test_list.append(max(score))
                                 n0 = len(test_list)

@@ -11,7 +11,7 @@ import redis
 import sys
 import os
 import io
-from multiprocessing import Process
+from multiprocessing import Process, cpu_count
 # getting the name of the directory
 # where the this file is present.
 current = os.path.dirname(os.path.realpath(__file__))

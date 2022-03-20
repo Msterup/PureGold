@@ -127,7 +127,7 @@ while True:
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:
-            torch.save(reg_agent, "temp_model")
+            torch.save(reg_agent.net.state_dict(), "temp_model")
             cpu_agent = RegAgent()
             cpu_agent.nik_rate = reg_agent.nik_rate
             cpu_agent.net.load_state_dict(torch.load("temp_model", map_location=torch.device('cpu')))

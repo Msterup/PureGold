@@ -49,14 +49,15 @@ else:
     print("Warning! Not using logging!")
 
 r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
+r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
-load_from_redis = False
+load_from_redis = True
 if load_from_redis:
-    reg_agent = pickle.loads(r.get('gpu_agent'))
+    reg_agent = pickle.loads(r.get('cpu_agent'))
 else:
     reg_agent = RegAgent()
-    r.set('agent', pickle.dumps(reg_agent))
+    r.set('cpu_agent', pickle.dumps(reg_agent))
 
 reg_agent.to_cuda()
 
@@ -80,6 +81,7 @@ e = 0
 card_sum = 0
 while True:
     num_items_in_list = r.llen('datalist')
+    print(f"Num items in list: {num_items_in_list}")
     if num_items_in_list == 0:
         time.sleep(10)
         print(time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -87,6 +89,8 @@ while True:
         e += 1
         data, card, huristic_cards, one_option_cards, precomputed_cards, prediction = pickle.loads(r.rpop('datalist'))
         reg_agent.cache(data)
+        if len(reg_agent.memory) < 32:
+            continue
         loss_sum, its = reg_agent.learn()
         print(f"Got {its}")
         trained_its += its
@@ -127,12 +131,12 @@ while True:
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:
-            torch.save(reg_agent.net.state_dict(), "temp_model")
-            cpu_agent = RegAgent()
-            cpu_agent.nik_rate = reg_agent.nik_rate
-            cpu_agent.net.load_state_dict(torch.load("temp_model", map_location=torch.device('cpu')))
-            r.set('cpu_agent', pickle.dumps(cpu_agent))
-            r.set('gpu_agent', pickle.dumps(reg_agent))
+            #torch.save(reg_agent.net.state_dict(), "temp_model")
+            #cpu_agent = RegAgent()
+            #cpu_agent.nik_rate = reg_agent.nik_rate
+            #cpu_agent.net.load_state_dict(torch.load("temp_model", map_location=torch.device('cpu')))
+            #r.set('cpu_agent', pickle.dumps(cpu_agent))
+            r.set('cpu_agent', pickle.dumps(reg_agent))
             print("Net has been sent to redis!")
 
 

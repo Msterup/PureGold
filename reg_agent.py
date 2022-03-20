@@ -69,9 +69,8 @@ class RegAgent:
 
 
     def cache(self, data):
-        if self.use_cuda:
-            for board, score in enumerate(data):
-                self.memory.append((board.tensorize(), torch.tensor([score])))
+        for data in data:
+            self.memory.append((data[0].tensorize(), torch.tensor([data[1]])))
 
         return
 

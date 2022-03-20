@@ -71,7 +71,7 @@ class RegAgent:
     def cache(self, tree):
         if self.use_cuda:
             for N, key in tqdm(enumerate(tree.N)):
-                if N >= 100 and (not key.turn):
+                if N >= 250 and (not key.turn):
                     self.memory.append((key.tensorize(), torch.tensor([tree.Q[key] / tree.N[key]])))
         else:
             for N, key in tqdm(enumerate(tree.N)):

@@ -174,6 +174,8 @@ def gameloop():
                         # prob good: alpha = 0.9999995
                         alpha = 0.999999995
                         test_list = []
+                        for _ in range(1000):
+                            tree.do_rollout(board)
                         for _ in range(searches_def):
                             tree.do_rollout(board)
 

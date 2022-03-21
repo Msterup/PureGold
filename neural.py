@@ -54,7 +54,7 @@ class ResNet(nn.Module):
     def forward(self, x):
         out = self.fc1(x)
         out = self.relu(out)
-        out = self.fc2(x)
+        out = self.fc2(out)
         out = self.relu(out)
         out = self.fc3(out)
         return out

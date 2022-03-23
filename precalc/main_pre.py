@@ -29,7 +29,7 @@ from reg_agent import RegAgent
 
 
 def new_YukonBoard():
-    piles = 4
+    piles = 5
     deck = []
     for i in range(1, 11):
         if i == 10:
@@ -55,7 +55,7 @@ def simulate(sim_board):
 
 
 def get_move(board, future_board):
-    piles = 4
+    piles = 5
     winner = None
     for i in range(piles):
         if board.make_move(i) == future_board:
@@ -67,7 +67,7 @@ def get_move(board, future_board):
 
 
 def gameloop():
-    piles = 4
+    piles = 5
     r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 
     is_CUDA_available = torch.cuda.is_available()
@@ -174,7 +174,7 @@ def gameloop():
                         # prob good: alpha = 0.9999995
                         alpha = 0.999999995
                         test_list = []
-                        for _ in range(1000):
+                        for _ in range(800):
                             tree.do_rollout(board)
                         for _ in range(searches_def):
                             tree.do_rollout(board)
@@ -313,7 +313,7 @@ def gameloop():
 
                 board = board.make_move(0)  # draw a a card
 if __name__ == '__main__':
-    #gameloop()
+    gameloop()
     num_workers=cpu_count()
     print(f"Starting worker count: {num_workers}")
     processes = []

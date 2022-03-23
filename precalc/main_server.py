@@ -28,7 +28,7 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 is_CUDA_available = torch.cuda.is_available()
 print(f"Checking CUDA avaliability.. {is_CUDA_available}")
 
-piles = 4
+piles = 5
 
 print(f"Entered piles {piles}")
 

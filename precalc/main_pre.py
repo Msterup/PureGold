@@ -73,7 +73,7 @@ def gameloop():
     is_CUDA_available = torch.cuda.is_available()
     print(f"Checking CUDA avaliability.. {is_CUDA_available}")
 
-    piles = 4
+    piles = 5
 
     use_precompute = False
 

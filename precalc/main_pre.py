@@ -313,7 +313,7 @@ def gameloop():
 
                 board = board.make_move(0)  # draw a a card
 if __name__ == '__main__':
-    gameloop()
+    #gameloop()
     num_workers=cpu_count()
     print(f"Starting worker count: {num_workers}")
     processes = []

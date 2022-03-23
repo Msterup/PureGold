@@ -174,12 +174,12 @@ def gameloop():
                         # prob good: alpha = 0.9999995
                         alpha = 0.999999995
                         test_list = []
-                        for _ in range(800):
+                        for _ in range(int(r.get('pregame'))):
                             tree.do_rollout(board)
                         for _ in range(searches_def):
                             tree.do_rollout(board)
 
-                            if _ % 30 == 0:
+                            if _ % int(r.get('rosetti')) == 0:
                                 score, winner = tree.choose(board)
                                 test_list.append(max(score))
                                 n0 = len(test_list)

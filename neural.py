@@ -39,7 +39,7 @@ class ResidualBlock(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, block, layers, in_channels=378, out_channels=378):
         super(ResNet, self).__init__()
-        self.fc1 = nn.Linear(444, 1000)  #5 piles = 444
+        self.fc1 = nn.Linear(444, 1000)  #4 = 378, 5 piles = 444, 6 =
         self.fc2 = nn.Linear(1000, 1000)
         self.fc3 = nn.Linear(1000, 1)
         self.relu = nn.ReLU()

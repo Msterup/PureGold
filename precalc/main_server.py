@@ -52,7 +52,7 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
-load_from_redis = True
+load_from_redis = False
 if load_from_redis:
     reg_agent = pickle.loads(r.get('cpu_agent'))
 else:
@@ -60,7 +60,8 @@ else:
     r.set('cpu_agent', pickle.dumps(reg_agent))
 
 reg_agent.to_cuda()
-
+r.set('pregame', 200)
+r.set('rosetti', 30)
 print("")
 print("Please make sure all settings are correct")
 

@@ -238,7 +238,7 @@ def gameloop():
                         print(f"Scores vs predictions:         Score of current state:  {score[0]}")
                         print(f"                               Score of prediction was: {reg_agent.act(board)}*")
                         print(" ")
-                        score = score[-4:]
+                        score = score[-piles:]
                         print(score)
                         print(predictions)
                         print(" ")

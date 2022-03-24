@@ -28,7 +28,7 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 is_CUDA_available = torch.cuda.is_available()
 print(f"Checking CUDA avaliability.. {is_CUDA_available}")
 
-piles = 5
+piles = 4
 
 print(f"Entered piles {piles}")
 
@@ -52,15 +52,18 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
-load_from_redis = False
-if load_from_redis:
+load_from = "File"
+if load_from == "Redis":
     reg_agent = pickle.loads(r.get('cpu_agent'))
+elif load_from == "File":
+    reg_agent = RegAgent()
+    reg_agent.net.load_state_dict(torch.load("precalc/4_files_final.pt"))
 else:
     reg_agent = RegAgent()
     r.set('cpu_agent', pickle.dumps(reg_agent))
 
 reg_agent.to_cuda()
-r.set('pregame', 200)
+r.set('pregame', 1000)
 r.set('rosetti', 30)
 print("")
 print("Please make sure all settings are correct")

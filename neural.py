@@ -43,6 +43,7 @@ class ResNet(nn.Module):
         self.fc2 = nn.Linear(1000, 1000)
         self.fc3 = nn.Linear(1000, 1)
         self.relu = nn.ReLU()
+        self.dr = nn.Dropout(0.10)
 
 
     def make_layer(self, block, blocks):
@@ -53,8 +54,10 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         out = self.fc1(x)
+        out = self.dr(out)
         out = self.relu(out)
         out = self.fc2(out)
+        out = self.dr(out)
         out = self.relu(out)
         out = self.fc3(out)
         return out

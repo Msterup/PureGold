@@ -60,8 +60,8 @@ elif load_from == "File":
     reg_agent.net.load_state_dict(torch.load("precalc/4_files_final.pt"))
 else:
     reg_agent = RegAgent()
-    r.set('cpu_agent', pickle.dumps(reg_agent))
 
+r.set('cpu_agent', pickle.dumps(reg_agent))
 reg_agent.to_cuda()
 r.set('pregame', 1000)
 r.set('rosetti', 30)
@@ -142,6 +142,9 @@ while True:
             #r.set('cpu_agent', pickle.dumps(cpu_agent))
             r.set('cpu_agent', pickle.dumps(reg_agent))
             print("Net has been sent to redis!")
+
+        if e % 100 == 0:
+            torch.save(reg_agent.net.state_dict(), f"checkpoints/{e/100}_net.pt")
 
 
 

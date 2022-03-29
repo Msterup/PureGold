@@ -159,7 +159,7 @@ class MCTS:
                 else:
                     terminal = 1
 
-                return (self.F[n]+wr+ln)*terminal
+                return (self.agent.act[n]+wr+ln)*terminal
 
 
             return max(node.find_children(), key=uct)

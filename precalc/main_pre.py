@@ -188,7 +188,7 @@ def gameloop():
                                     T = scipy.stats.t.interval(alpha, len(test_list) - 1, loc=0, scale=1)[-1]
                                     h0 = T * (S / math.sqrt(n0 - 1))
 
-                                    sort_score = score[-4:]
+                                    sort_score = score[(-piles):]
                                     sort_score = set(sort_score)
 
                                     last_item = 0

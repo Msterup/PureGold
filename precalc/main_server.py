@@ -57,14 +57,15 @@ if load_from == "Redis":
     reg_agent = pickle.loads(r.get('cpu_agent'))
 elif load_from == "File":
     reg_agent = RegAgent()
-    reg_agent.net.load_state_dict(torch.load("precalc/4_files_final.pt"))
+    reg_agent.net.load_state_dict(torch.load("checkpoints/autosave/autosave_net.pt"))
+    reg_agent.nik_rate = 1
 else:
     reg_agent = RegAgent()
 
 r.set('cpu_agent', pickle.dumps(reg_agent))
 reg_agent.to_cuda()
-r.set('pregame', 1000)
-r.set('rosetti', 30)
+r.set('pregame', 300)
+r.set('rosetti', 60)
 print("")
 print("Please make sure all settings are correct")
 
@@ -130,8 +131,8 @@ while True:
             writer.add_scalar("Num experiences", torch.FloatTensor([trained_its]), e)
             writer.add_scalar("Prediction, last 1000", torch.FloatTensor([pred_mean]), card_sum)
 
-            if pred_mean > 0.75:
-                reg_agent.nik_rate = reg_agent.nik_rate - 0.001  # Hyper parameter
+            if pred_mean > 1.75:
+                reg_agent.nik_rate = reg_agent.nik_rate -0.001  # Hyper parameter
             writer.add_scalar("Huristics rate", torch.FloatTensor([reg_agent.nik_rate]), e)
 
         if e % 5 == 0:
@@ -144,8 +145,9 @@ while True:
             print("Net has been sent to redis!")
 
         if e % 100 == 0:
-            torch.save(reg_agent.net.state_dict(), f"checkpoints/{e/100}_net.pt")
 
+            torch.save(reg_agent.net.state_dict(), f"checkpoints/autosave/2_{int(e/100)}_net.pt")
+            torch.save(reg_agent.net.state_dict(), f"checkpoints/autosave/autosave_net.pt")
 
 
 

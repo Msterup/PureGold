@@ -52,7 +52,7 @@ r = redis.Redis(host='82.211.216.32', port=6379, db=0, password='MikkelSterup')
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, password='MikkelSterup')
 
 ### Agent
-load_from = "None"
+load_from = "File"
 if load_from == "Redis":
     reg_agent = pickle.loads(r.get('cpu_agent'))
 elif load_from == "File":

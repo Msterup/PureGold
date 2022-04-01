@@ -43,8 +43,10 @@ class ResNet(nn.Module):
         self.relu = nn.ReLU()
         self.layer1 = self.make_layer(block, layers)
         #self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(in_channels, 1)
-        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(in_channels, 1000)
+        self.fc3 = nn.Linear(1000, 1000)
+        self.fc4 = nn.Linear(1000, 1)
+
 
 
     def make_layer(self, block, blocks):
@@ -57,5 +59,10 @@ class ResNet(nn.Module):
         out = self.fc1(x)
         out = self.relu(out)
         out = self.layer1(out)
+        out = self.relu(out)
         out = self.fc2(out)
+        out = self.relu(out)
+        out = self.fc3(out)
+        out = self.relu(out)
+        out self.fc4
         return out

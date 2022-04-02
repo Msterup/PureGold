@@ -17,7 +17,7 @@ from functools import lru_cache
 class MCTS:
     "Monte Carlo tree searcher. First rollout the tree then choose a move."
 
-    def __init__(self, agent, exploration_weight=300):
+    def __init__(self, agent, exploration_weight=1000):
         self.agent = agent
         self.Q = defaultdict(int)  # total reward of each node
         self.N = defaultdict(int)  # total visit count for each node
